@@ -1,0 +1,1328 @@
+\documentclass[a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{lipsum}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{pdfpages}
+\usepackage{adjustbox}
+\renewcommand{\figurename}{Figura}
+\renewcommand\contentsname{Índice}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+
+
+
+
+\title{Informe IMMC 2}
+\author{$\pi = 3$}
+\date{Noviembre 2020}
+
+\begin{document}
+\includepdf{portada2.pdf}
+\newpage
+\tableofcontents
+\newpage
+\section{Resumen}
+Para esta etapa del IMMC se pide modelar un algoritmo que permita escoger al postulante para la Comisión Constituyente que mejor represente las preferencias de un usuario, en base a un cuestionario de alternativas que responden los usuarios y los candidatos. En el caso de los últimos, responden el formulario de antemano. Junto a esto, se pide mejorar el primer modelo generando un segundo que considere el grado de importancia que los usuarios le asignan a cada pregunta dentro del cuestionario, para que este influya en la recomendación final al usuario. Las preguntas pueden ser de dos a cinco alternativas, y se entrega una base de datos con las respuestas de ocho candidatos y de tres usuarios para testear los modelos.  \newline \newline Para el primer algoritmo, se genera un porcentaje de afinidad que buscará mostrar qué tan afines son las respuestas de un usuario con las de un candidato. Esto se realizará para cada pregunta del formulario y luego se obtendrá el promedio entre todas las preguntas para así obtener el porcentaje de afinidad total. El mismo proceso se llevará a cabo para todos los candidatos, y el recomendado será quien tenga el porcentaje de afinidad total más alto con el usuario, es decir, quien respondió de manera más similar, aunque no necesariamente igual, el cuestionario. En casos de empate, se elegirá al candidato con la menor desviación estándar de los porcentajes de afinidad. \newline\newline Para el segundo algoritmo solicitado, se le asignará a cada grado de importancia un porcentaje, que regulará el peso de la afinidad por cada pregunta. Luego se sumarán los porcentajes que ahora, al estar regulados, consideran a la importancia que se le da a cada pregunta y se dividirá esta suma por la suma de los porcentajes de importancia asignados, ya que estos representan lo máximo esperado. Esto es lo que se llamará el coeficiente de afinidad preferencial total y se escogerá el más alto para recomendar un candidato al usuario. En casos de empate se utilizará la desviación estándar tal como en el método anterior. 
+\newpage
+\section{Reformulación del problema}
+Una organización de la sociedad civil está diseñando un sistema que permita determinar similitudes entre las opiniones sobre 22 temas importantes de postulantes constitucionales y las preferencias de los usuarios. Se pide proponer dos modelos; uno que, basado en las 22 respuestas del usuario, escoja un postulante acorde a sus propias 22 respuestas, y otro que considere el grado de importancia que el usuario asigna a cada respuesta en una escala de cinco niveles: Nada, Poco, Medianamente, Bastante y Muy importante. Ambos modelos deberán ser testeados con los datos de ocho postulantes y tres candidatos. En este trabajo se considerará que un candidato es recomendable para un usuario, si la cercanía de sus respuestas es, en contraste a las de los otros candidatos, mayor. 
+\subsection{Lista de variables}
+\begin{figure}[H]
+    \begin{center}
+   \begin{tabular}{|m{0.37cm}|m{8cm}|}
+      \hline
+     $i$& Número de pregunta\\
+      \hline
+     $n_{i}$& Cantidad de alternativas por pregunta\\
+     \hline
+     $p_{i}$& Respuesta del postulante para la pregunta $i$ \\
+     \hline
+     $u_{i}$& Respuesta del usuario para la pregunta $i$ \\
+     \hline
+     $a_{i}$& Coeficiente de afinidad entre usuario y postulante en la pregunta $i$\\
+     \hline
+     $a_{t}$& Coeficiente de afinidad total entre usuario y postulante\\
+     \hline
+     $g_{i}$& Grado de importancia asignado a la pregunta $i$\\
+     \hline
+     $G_{i}$& Factor que multiplica a $A_{i}$ que considera a la importancia que el usuario le asigna a una pregunta \\
+     \hline
+     $\Psi_{i}$& Coeficiente de afinidad preferencial entre usuario y postulante en la pregunta $i$\\
+     \hline
+     $\Psi_{t}$& Coeficiente de afinidad preferencial total entre usuario y postulante \\
+     \hline
+\end{tabular} 
+\end{center}
+    \caption{Lista de variables}
+\end{figure} 
+\section{Modelo 1}
+En primer lugar se ordenan las alternativas de forma ascendente y se les asigna un valor: a) = 1, b) = 2, c) = 3, d) = 4, e) = 5. Con estos valores se compara en cada pregunta ($i$) la respuesta del postulante ($p_{i}$) con la respuesta del usuario ($u_{i}$). De esta manera se genera un coeficiente de afinidad ($A_{i}$) dependiendo de la cantidad de alternativas que tiene la pregunta ($n_{i}$). Todo esto es definido por la siguiente fórmula: 
+\begin{equation*}
+    A_{i}= 1-\frac{|p_{i}-u_{i}|}{n_{i}}
+\end{equation*}
+Con esta primera fórmula se busca asignar una forma de medir la distancia porcentual entre la alternativa marcada por el usuario y la marcada por el postulante. En este caso se hace de forma radial, en donde el centro es la alternativa del usuario y la distancia porcentual se mide dependiendo $n_{i}$.  \newline
+\begin{figure}[H]
+    \begin{center}
+    \includegraphics[width= 5cm, height =3cm]{desmos-graph.png}
+    \end{center}    
+    \caption{ Distancia porcentual radial en preguntas de cinco alternativas \footnote{\url{ https://www.desmos.com/calculator/5b94bravoe }}}
+\end{figure} 
+Por ejemplo, en este gráfico se muestra cómo se mide en preguntas con 5 alternativas de respuesta. Si no hay diferencia entre la respuesta del usuario y la del postulante, tendrán una afinidad de 100\% y disminuirá en 25\% con cada diferencia de una alternativa. Esto significa que con una sola alternativa de diferencia, tendrá 75\% de afinidad, con dos de diferencia será un 50\%, con tres será 25\% y con cuatro, será de 0\%.\newline\newline Para obtener el porcentaje de afinidad total ($A_{t}$) entre el postulante y el usuario, es necesario encontrar el promedio de los coeficientes de afinidad en todas las preguntas y para eso se aplica la siguiente fórmula:
+\begin{equation*}
+    A_{t}= \dfrac{\sum_{i=1}^{22}A_{i}}{22}
+\end{equation*}
+Este proceso se repite para cada postulante y se elige el postulante que tiene el porcentaje de afinidad total mayor. 
+\subsection{Ejemplo ilustrativo}
+Para aclarar más el funcionamiento de este modelo, se mostrará cómo funciona para el caso de la usuaria Camila Gutiérrez. Si se obtienen todos los $A_{i}$ para cada candidato con Camila, de acuerdo a la primera fórmula, obtenemos los siguientes valores: 
+ \newline 
+\begin{figure}[H]
+    \begin{center}
+\includegraphics[scale = 0.3]{tablaBig.jpeg}    
+\end{center}   
+    \caption{Afinidad de Camila G con respecto a cada postulante \footnote{Hoja “Modelo 1 completo” del documento Excel “Cálculos IMMC 2” que se encuentra en Fuentes.}}
+\end{figure} 
+\newline
+En esta tabla los elementos de las columnas N a U representan a los $A_{i}$ de Camila Gutiérrez con cada candidato, y las filas representan los resultados en cada pregunta $i$. Además en la columna B se encuentran la cantidad de alternativas de cada pregunta, que se usan para determinar los $A_{i}$. Posteriormente se obtiene el promedio de las columnas y se multiplica por cien y así se obtienen los porcentajes de la última fila. Finalmente, para recomendar a un candidato, se elige el porcentaje más alto, que en este caso sería 82,27\%, que corresponde a Valeria Vásquez, quien es la candidata recomendada para Camila Gutiérrez.
+\subsection{Aplicación del modelo a la base de datos: Recomendaciones}
+Con este modelo se obtienen las siguientes recomendaciones para los usuarios dados: 
+\begin{itemize}
+\item El postulante recomendado para Camila Gutiérrez es Valeria Vásquez; ya que tienen un porcentaje de afinidad total de 82,27\%.
+\item El postulante recomendado para Ignacio Orellana es Valentina Muñoz; ya que tienen un porcentaje de afinidad total de 92,23\%.
+\item El postulante recomendado para Juana Flores es Cristóbal Martínez; ya que tienen un porcentaje de afinidad total de 89,85\%.
+\end{itemize} 
+
+\section{Modelo 2}
+Este segundo modelo toma el primer modelo de base, pero le añade una constante dependiendo de la importancia que se le otorga a cada pregunta. De esta manera se logra que las preguntas más importantes para el usuario tengan un mayor peso en el coeficiente de afinidad total entre el postulante y el usuario. Para definir estas constantes se le asigna un valor a cada grado de importancia posible, que se presentan en la siguiente tabla: \newline 
+
+\begin{figure}[H]
+    \begin{center}
+    \begin{tabular}{|c|c|}
+    \hline
+    Importancia &  $g$\\
+    \hline
+    Nada importante &  1\\
+    \hline
+    Poco importante & 2\\
+    \hline
+    Medianamente importante & 3\\
+    \hline
+    Bastante importante & 4\\
+    \hline
+    Muy importante & 5 \\
+    \hline
+\end{tabular}
+\end{center}   
+    \caption{ Grados de importancia ($g$) en una escala de 5 niveles}
+\end{figure} 
+
+\newline
+Estos valores luego se ingresan en la función que modela el factor que multiplicará el coeficiente de afinidad de cada pregunta:
+\begin{equation*}
+    G(g) = 0,2g
+\end{equation*}
+Entonces, al multiplicar este valor por el coeficiente de afinidad, se obtiene el coeficiente de afinidad preferencial de cada pregunta ($\Psi_{i}$). Para encontrar el coeficiente de afinidad preferencial total entre el postulante y el usuario ($\Psi_{t}$), se divide la suma de los coeficientes de afinidad preferencial en la suma de los porcentajes de importancia, ya que estos representan la mayor afinidad esperada. Esto es:
+\begin{equation*}
+    \Psi_{t}= 100\left(\dfrac{\sum_{i=1}^{22}A_{i}G_{i}}{\sum_{i=1}^{22}G_{i}}\right)
+\end{equation*}
+Finalmente se escoge al $\Psi_{t}$ mayor para elegir al candidato a recomendar. 
+\subsection{Ejemplo ilustrativo}
+Para mostrar cómo funciona este modelo, se usarán las alternativas marcadas por Juana Flores, pero también se dará una lista de grados de importancia que será aleatoria. Primero que nada, se obtienen todos los $G_{i}$ y $A_{i}$ para cada candidato en contraste a Juana. Ingresando esto en el documento Excel, obtenemos: 
+\newline 
+\begin{figure}[H]
+    \begin{center}
+    \includegraphics[scale = 0.515]{Afinidad de Juana Flores considerando preferencias con respecto a cada postulante.png}
+\end{center}   
+    \caption{Afinidad de Juana Flores considerando preferencias con respecto a cada postulante \footnote{Hoja “Modelo 2 completo” del documento Excel “Cálculos IMMC 2” que se encuentra en Fuentes.}}
+\end{figure} 
+En esta tabla, la columna M muestra a las $g$ generadas aleatoriamente y la columna O muestra a las respectivas $G_{i}$ para cada $g_{i}$. En las columnas Q a AF se muestran de una forma intercalada la afinidad con el candidato y Juana ($A_{i}$) y la afinidad preferencial del candidato con Juana ($\Psi_{i}$), calculadas con las fórmulas anteriormente mostradas. Los porcentajes que aparecen en las filas inferiores representan a la afinidad total preferencial ($\Psi_{t}$) de los candidatos respectivos. El valor marcado en verde representa al mayor $\Psi_{t}$  y, por ende, al candidato que se recomendará a Juana. \newline
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale = 0.28]{Cambio en los grados de importancia para Juana Flores.png}
+    \caption{Cambio en los grados de importancia para Juana Flores}
+\end{figure} 
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale = 0.40]{Cambio en los grados de importancia para Ignacio Orellana.png} 
+    \caption{Cambio en los grados de importancia para Ignacio Orellana}
+\end{figure} 
+\newline
+Hay casos en que, si se cambia importancia de la preferencia, la recomendación cambia, lo que significa que el modelo funciona en función de la importancia. Con los grados de importancia aleatorios utilizados originalmente, Cristóbal Martínez debió haber sido recomendado a Juana Flores, sin embargo por el cambio de los grados de importancia asignados, se le recomendó Raquel Mardones. A Ignacio por otro cambio, se le recomendó Sebastián Paillacán, siendo que bajo las circunstancias originales se le recomendaba Valentina Muñoz.
+
+
+
+\subsection{Aplicación del modelo a la base de datos: Recomendaciones}
+Considerando que todos estos usuarios marcaron la siguiente lista de importancias: [1,1,2,4,5,1,3,2,1,5,2,3,3,5,4,4,4,2,2,3,1,3], se les recomendarían los siguientes candidatos: \footnote{Apéndice 3}
+\begin{itemize}
+    \item El postulante recomendado para Camila Gutiérrez es Valeria Vásquez; ya que tienen un porcentaje de afinidad preferencial total de 83,55\%.
+    \item El postulante recomendado para Ignacio Orellana es Valentina Muñoz; ya que tienen un porcentaje de afinidad preferencial total de 90,16\%.
+    \item El postulante recomendado para Juana Flores es Cristóbal Martínez; ya que tienen un porcentaje de afinidad preferencial total de 87,98\%.
+\end{itemize}
+\section{Mejora de los métodos}
+Si bien ambos modelos dan una recomendación para los usuarios dados, podría llegar a darse el caso en donde no exista un único postulante afín, sino que varios, si es que se añade algún usuario o postulante diferente a los de la base de datos. Esto se puede ver en el código 1 en el apéndice, que genera 1000 usuarios diferentes y busca casos en donde dos candidatos sean recomendados. \newline\newline
+Empate en el modelo 1:\newline
+\includegraphics[scale = 0.47]{Empate Modelo 1 programa.png}
+\newline
+Empate en el modelo 2:\newline
+\includegraphics[scale = 0.47]{Empate Modelo 2 programa.png}
+\newline
+En el caso de un empate, se utiliza la desviación estándar de la población de datos que generan todos los $A_{i}$ o $\Psi_{i}$ de un usuario. Esto se repite por cada candidato en el empate y se elige a quien tenga la menor desviación, pues esto representa a respuestas más similares a las del usuario.   \newline \newline Para visualizar como funciona esto en el primer modelo, se usarán las respuestas dadas por Juana Flores, aunque no se produzca ningún empate.\newline
+\begin{figure}[H]
+    \begin{center}
+    \includegraphics[scale=0.5]{Gráfico respuestas.png}
+\end{center}   
+    \caption{Problema de la desviación entre respuestas de Juana Flores, Cristóbal Martínez y Raquel Mardones \footnote{Hoja “Comparación respuestas” del documento Excel “Cálculos IMMC 2” que se encuentra en Fuentes}}
+\end{figure} 
+\begin{figure}[H]
+    \begin{center}
+    \includegraphics[scale=0.4]{wideTabla.jpeg}
+\end{center}   
+\end{figure} 
+\newline
+Originalmente, la expansión al modelo con la desviación estándar estaba destinada a empates posibles sólamente fuera de este mundo de 8 postulantes y 3 usuarios que se entregan. Sin embargo, como se mencionó, para salir de toda duda es que se ejecuta, incluso sin necesidad. Cabe recalcar, de nuevo, que sólo se procede así en caso de empate, sin embargo se ejemplifica de esta manera, en un caso de vencedor por afinidad total, para que se comprenda con los datos dados. Se está comprometido con la exactitud. En este caso de semejanza en las respuestas, el modelo recomendaría a Cristóbal Martínez para Juana Flores, por su mayor afinidad total. No obstante, si Raquel y Cristóbal hubieran tenido la misma afinidad total porcentual con Juana, habría sido recomendada Raquel Mardones debido a la menor diferencia o distancia ($\sigma$ o desviación estándar) entre respuestas con respecto a Flores. Los modelos 1 y 2 se pueden probar libremente con los programas del apéndice 2 y 3.
+\footnote{Ver apéndices 2 y 3}
+\section{Conclusiones}
+Se obtuvieron dos modelos diferentes que permiten recomendar un candidato a un usuario cualquiera de acuerdo a la similitud de sus respuestas, en donde el segundo método le asigna más peso a las preguntas que son marcadas como importantes por el usuario. Se debe decir que estos resultados se obtienen considerando que un candidato es recomendable si es que sus respuestas son \textit{similares} a las de un usuario. Esto es importante, pues el concepto de \textit{recomendabilidad} también se puede entender como mayor cantidad de coincidencias exactas, pero se evitó usar esta acepción del concepto, pues en el caso en donde hay pocas coincidencias, se podría recomendar a un candidato que es menos \textit{similar} aunque más \textit{exacto en preguntas específicas}. Por esto se eligió además una distancia radial, en donde se le asigna más “puntos” a un candidato si su respuesta estaba en cercanía a la del usuario, pues así se considera a la cercanía, pero también a las coincidencias exactas por cada pregunta. Pensar en cercanía también es lógico, pues las alternativas están ordenadas de más liberal a más conservadoras, por lo que las ideas son más afines mientras menor sea la distancia entre ellas. Esto, por supuesto, considerando la cantidad de alternativas de cada pregunta.\newline\newline Los modelos no solo obtienen al candidato óptimo, sino que también permiten obtener la afinidad de otros candidatos con el usuario, algo que si bien no se pide, de todas maneras podría ser de utilidad para el usuario. Esto sería útil, por ejemplo, para saber qué candidato es completamente opuesto a sus preferencias o incluso conocer a un candidato alternativo al recomendado. 
+\newpage
+\section{Fuentes}
+\url{https://docs.google.com/spreadsheets/d/1ujrzaKnOdRVj8H1AXnYI-wUb1duZXkWmUrMsCIP7zXk/edit?usp=sharing }: Hojas de cálculo para todos los modelos.\newline\newline
+\url{ https://www.desmos.com/calculator/5b94bravoe }: Gráfico que muestra la idea de la distancia radial. \newline\newline 
+\url{https://drive.google.com/file/d/14pfN-CBM4XtqznDJlgZqnu3RY9VxCRgw/view?usp=sharing}: Base de datos entregada.
+
+\section{Apéndices}
+\subsection{Apéndice 1.1}
+\begin{lstlisting}[language=Python]
+#se recomienda ver los comentarios del apéndice 2 antes de este, pues allí se explica
+#el funcionamiento de la parte principal
+
+import pandas as pd
+import numpy as np
+import random
+import statistics
+import math
+
+
+def elegirDos():
+    lista = ["a","b"]
+    return random.choice(lista)
+def elegirTres():
+    lista = ["a","b","c"]
+    return random.choice(lista)
+def elegirCuatro():
+    lista = ["a","b","c","d"]
+    return random.choice(lista)
+def elegirCinco():
+    lista = ["a","b","c","d","e"]
+    return random.choice(lista)
+alternativas = ["a","b","c","d"]
+personaRandom = []
+
+datos = pd.read_excel("Base_datos_sistema_elige_constituyentes.xlsx")
+usuariosDummy = pd.read_excel("Base_datos_sistema_elige_constituyentes.xlsx", sheet_name = "Respuestas usuariosas")
+del datos['N']
+del usuariosDummy['N']
+#alternativas de usuarios dados
+Juana = usuariosDummy["Juana Flores"].tolist()
+Ignacio =usuariosDummy["Ignacio Orellana"].tolist()
+CamilaG =usuariosDummy["Camila Gutierrez"].tolist()
+
+
+
+
+def obtenerPctje(persona):
+    def obtnerPorcentajeDeAfinidad(respuestasUsuario,respuestasCandidato):
+        porcentajes = []
+        #[4,4,4,2,3,4,5,4,2,2,4,4,4,3,3,4,4,5,5,3,3,4]
+        i=1
+        for respuestaUsuario,respuestaCandidato in zip(respuestasUsuario,respuestasCandidato):
+            if i == 7 or i in range(18,20):#5
+
+                alternativaUsuarioEnNum = 0
+                alternativaCandidatoEnNum = 0
+                if respuestaUsuario == "a":
+                    alternativaUsuarioEnNum = 1
+                if respuestaUsuario == "b":
+                    alternativaUsuarioEnNum = 2
+                if respuestaUsuario == "c":
+                    alternativaUsuarioEnNum = 3
+                if respuestaUsuario == "d":
+                    alternativaUsuarioEnNum = 4
+                if respuestaUsuario == "e":
+                    alternativaUsuarioEnNum = 5
+                if respuestaCandidato == "a":
+                    alternativaCandidatoEnNum = 1
+                if respuestaCandidato == "b":
+                    alternativaCandidatoEnNum = 2
+                if respuestaCandidato == "c":
+                    alternativaCandidatoEnNum = 3
+                if respuestaCandidato == "d":
+                    alternativaCandidatoEnNum = 4
+                if respuestaCandidato == "e":
+                    alternativaCandidatoEnNum = 5
+                distancia = abs(alternativaCandidatoEnNum-alternativaUsuarioEnNum)
+                porcentaje = 1-((distancia)/(5))
+                porcentajes.append(porcentaje)
+
+            if i in range(1,4) or i == 6 or i == 8 or i in range(11,14) or i in range(16,18) or i == 22: 
+
+                alternativaUsuarioEnNum = 0
+                alternativaCandidatoEnNum = 0
+                if respuestaUsuario == "a":
+                    alternativaUsuarioEnNum = 1
+                if respuestaUsuario == "b":
+                    alternativaUsuarioEnNum = 2
+                if respuestaUsuario == "c":
+                    alternativaUsuarioEnNum = 3
+                if respuestaUsuario == "d":
+                    alternativaUsuarioEnNum = 4
+
+                if respuestaCandidato == "a":
+                    alternativaCandidatoEnNum = 1
+                if respuestaCandidato == "b":
+                    alternativaCandidatoEnNum = 2
+                if respuestaCandidato == "c":
+                    alternativaCandidatoEnNum = 3
+                if respuestaCandidato == "d":
+                    alternativaCandidatoEnNum = 4
+
+                distancia = abs(alternativaCandidatoEnNum-alternativaUsuarioEnNum)
+                porcentaje = 1-(abs(alternativaCandidatoEnNum-alternativaUsuarioEnNum))/(4)
+                porcentajes.append(porcentaje)
+            if i == 5 or i in range(14,16) or i in range(20,22):
+
+                alternativaUsuarioEnNum = 0
+                alternativaCandidatoEnNum = 0
+                if respuestaUsuario == "a":
+                    alternativaUsuarioEnNum = 1
+                if respuestaUsuario == "b":
+                    alternativaUsuarioEnNum = 2
+                if respuestaUsuario == "c":
+                    alternativaUsuarioEnNum = 3
+
+                if respuestaCandidato == "a":
+                    alternativaCandidatoEnNum = 1
+                if respuestaCandidato == "b":
+                    alternativaCandidatoEnNum = 2
+                if respuestaCandidato == "c":
+                    alternativaCandidatoEnNum = 3
+
+                distancia = abs(alternativaCandidatoEnNum-alternativaUsuarioEnNum)
+                porcentaje = 1-((distancia)/(3))
+                porcentajes.append(porcentaje)
+            if i == 4 or i in range(9,11):
+
+                alternativaUsuarioEnNum = 0
+                alternativaCandidatoEnNum = 0
+                if respuestaUsuario == "a":
+                    alternativaUsuarioEnNum = 1
+                if respuestaUsuario == "b":
+                    alternativaUsuarioEnNum = 2
+
+                if respuestaCandidato == "a":
+                    alternativaCandidatoEnNum = 1
+                if respuestaCandidato == "b":
+                    alternativaCandidatoEnNum = 2
+                distancia = abs(alternativaCandidatoEnNum-alternativaUsuarioEnNum)
+                porcentaje = 1-((distancia)/(2))
+                porcentajes.append(porcentaje)   
+            
+            i+=1
+        
+        return porcentajes
+    datos = pd.read_excel("Base_datos_sistema_elige_constituyentes.xlsx")
+    usuariosDummy = pd.read_excel("Base_datos_sistema_elige_constituyentes.xlsx", sheet_name = "Respuestas usuariosas")
+    del datos['N']
+    del usuariosDummy['N']
+    
+    Raquel = datos["Raquel Mardones"].tolist()
+    Valeria = datos["Valeria Vasquez"].tolist()
+    Sebastian = datos["Sebastián Paillacán"].tolist()
+    Juan = datos["Juán Perez"].tolist()
+    Camila = datos["Camila Donoso"].tolist()
+    Cristobal =  datos["Cristóbal Martínez"].tolist()
+    Jose  = datos["José González"].tolist()
+    Valentina = datos["Valentina Muñoz"].tolist()
+    
+    postulantes= [["Raquel Mardones",Raquel], ["Valeria Vasquez",Valeria], 
+              ["Sebastián Paillacán",Sebastian],["Juán Perez",Juan],
+              ["Camila Donoso",Camila], ["Cristóbal Martínez",Cristobal], 
+              ["Jose González",Jose], ["Valentina Muñoz",Valentina]]
+    
+    uber = []
+    for i in postulantes:
+        uber.append(obtnerPorcentajeDeAfinidad(persona,i[1]))
+        matos = statistics.mean(obtnerPorcentajeDeAfinidad(persona,i[1]))
+        i.append(matos)
+
+    for i in postulantes:
+        desviacion = statistics.pstdev(obtnerPorcentajeDeAfinidad(persona,i[1]))
+        i.append(desviacion)
+   
+    
+    return postulantes
+
+
+def my_max(lista):
+        maximum = lista[0]
+
+        for item in lista:
+            if item[2] > maximum[2]:
+                maximum = item
+
+        return maximum    
+
+   
+def my_min(lista):
+        maximum = lista[0]
+
+        for item in lista:
+            if item[3] < maximum[3]:
+                maximum = item
+
+        return maximum 
+
+
+CamilaPctj = obtenerPctje(CamilaG)
+porcentajeMayorC = my_max(CamilaPctj)
+desvMenorC =   my_min(CamilaPctj)
+
+
+IgnacioPctj = obtenerPctje(Ignacio)
+porcentajeMayorI = my_max(IgnacioPctj)
+desvMenorI =   my_min(IgnacioPctj)
+    
+JuanaPctj = obtenerPctje(Juana)
+porcentajeMayorJ = my_max(JuanaPctj)
+desvMenorJ =   my_min(JuanaPctj)
+    
+
+
+
+def checkerEmpate(listaTop,listaUsuario):
+    
+    max_1 = listaTop[0]
+    max_1Pctj = round(max_1[2],2)
+    empate = False
+
+    for i in listaTop:
+        if i[0]!=max_1[0]and round(i[2],2) == max_1Pctj: 
+            
+            print("se encontró un empate!")
+            print(f"alternativas marcadas para el empate: {listaUsuario}")
+            empate = True
+            listaTopPorDesv = sorted(listaTop,key = lambda x: x[3] )
+            print(f"el ganador del repechaje según desviación estandar es {listaTopPorDesv[0][0]}")
+            
+    if not empate:
+        pass
+        """
+        print("no hay un empate")
+        print(f"El postulante recomendado para la persona random es: {max_1[0]}; ya que tienen un porcentaje de afinidad total de: {max_1[2]*100}%")
+        """
+#crea 1000 usuarios diferentes; es decir; con diferentes alternativas marcadas. Con esto se buscan empates
+for i in range(1000):
+    a = [elegirCuatro() for i in range(3) ]+[elegirDos()]+[elegirTres()]+[elegirCuatro()]+[elegirCinco()]+[elegirCuatro()]+[elegirDos() for i in range(2)]+[elegirCuatro() for i in range(3)]
+    #4*3+2+3+4+5+4+2*2+4*3+3*2+4*3+5+3*2+4
+
+    b = [ elegirTres() for i in range(2)]+[elegirCuatro() for i in range(3)]+[elegirCinco()]+[ elegirTres() for i in range(2)]+[elegirCuatro()]
+
+    listaRandom = a+b
+    PersonaRandom = obtenerPctje(listaRandom) 
+    porcentajeMayorRandom = my_max(PersonaRandom)
+    desvMenorRandom = my_min(PersonaRandom)
+    ordenadoRandom = sorted(PersonaRandom, key = lambda x: x[2], reverse=True)
+    checkerEmpate(ordenadoRandom, listaRandom)
+    
+    
+
+
+print(f"El postulante recomendado para Camila Gutierrez es: {porcentajeMayorC[0]}; ya que tienen un porcentaje de afinidad total de: {porcentajeMayorC[2]*100}%")
+print(f"El postulante recomendado para Ignacio Orellana es: {porcentajeMayorI[0]}; ya que tienen un porcentaje de afinidad total de: {porcentajeMayorI[2]*100}%")
+print(f"El postulante recomendado para Juana Flores es: {porcentajeMayorJ[0]}; ya que tienen un porcentaje de afinidad total de: {porcentajeMayorJ[2]*100}%")
+ 
+
+\end{lstlisting}
+
+\subsection{Apéndice 1.2}
+\begin{lstlisting}[language = Python]
+#se recomienda ver los comentarios del apéndice 3, pues alli se habla de lo principal
+import pandas as pd
+import numpy as np
+import random
+import statistics
+import math
+import statistics
+import math
+
+def elegirDos():
+    lista = ["a","b"]
+    return random.choice(lista)
+def elegirTres():
+    lista = ["a","b","c"]
+    return random.choice(lista)
+def elegirCuatro():
+    lista = ["a","b","c","d"]
+    return random.choice(lista)
+def elegirCinco():
+    lista = ["a","b","c","d","e"]
+    return random.choice(lista)
+
+
+
+def obtnerPorcentajeDeAfinidadPreferencial(preferencias, listaRandom):
+    
+
+    def obtnerPorcentajeDeAfinidad(respuestasUsuario,respuestasCandidato, preferencias):
+        porcentajes = []
+        i=1
+        for respuestaUsuario,respuestaCandidato in zip(respuestasUsuario,respuestasCandidato):
+            if i == 7 or i in range(18,20):#5
+
+                alternativaUsuarioEnNum = 0
+                alternativaCandidatoEnNum = 0
+                if respuestaUsuario == "a":
+                    alternativaUsuarioEnNum = 1
+                if respuestaUsuario == "b":
+                    alternativaUsuarioEnNum = 2
+                if respuestaUsuario == "c":
+                    alternativaUsuarioEnNum = 3
+                if respuestaUsuario == "d":
+                    alternativaUsuarioEnNum = 4
+                if respuestaUsuario == "e":
+                    alternativaUsuarioEnNum = 5
+                if respuestaCandidato == "a":
+                    alternativaCandidatoEnNum = 1
+                if respuestaCandidato == "b":
+                    alternativaCandidatoEnNum = 2
+                if respuestaCandidato == "c":
+                    alternativaCandidatoEnNum = 3
+                if respuestaCandidato == "d":
+                    alternativaCandidatoEnNum = 4
+                if respuestaCandidato == "e":
+                    alternativaCandidatoEnNum = 5
+                distancia = abs(alternativaCandidatoEnNum-alternativaUsuarioEnNum)
+                porcentaje = 1-((distancia)/(5))
+                porcentajes.append(porcentaje)
+
+            if i in range(1,4) or i == 6 or i == 8 or i in range(11,14) or i in range(16,18) or i == 22: 
+
+                alternativaUsuarioEnNum = 0
+                alternativaCandidatoEnNum = 0
+                if respuestaUsuario == "a":
+                    alternativaUsuarioEnNum = 1
+                if respuestaUsuario == "b":
+                    alternativaUsuarioEnNum = 2
+                if respuestaUsuario == "c":
+                    alternativaUsuarioEnNum = 3
+                if respuestaUsuario == "d":
+                    alternativaUsuarioEnNum = 4
+
+                if respuestaCandidato == "a":
+                    alternativaCandidatoEnNum = 1
+                if respuestaCandidato == "b":
+                    alternativaCandidatoEnNum = 2
+                if respuestaCandidato == "c":
+                    alternativaCandidatoEnNum = 3
+                if respuestaCandidato == "d":
+                    alternativaCandidatoEnNum = 4
+
+                distancia = abs(alternativaCandidatoEnNum-alternativaUsuarioEnNum)
+                porcentaje = 1-(abs(alternativaCandidatoEnNum-alternativaUsuarioEnNum))/(4)
+                porcentajes.append(porcentaje)
+            if i == 5 or i in range(14,16) or i in range(20,22):
+
+                alternativaUsuarioEnNum = 0
+                alternativaCandidatoEnNum = 0
+                if respuestaUsuario == "a":
+                    alternativaUsuarioEnNum = 1
+                if respuestaUsuario == "b":
+                    alternativaUsuarioEnNum = 2
+                if respuestaUsuario == "c":
+                    alternativaUsuarioEnNum = 3
+
+                if respuestaCandidato == "a":
+                    alternativaCandidatoEnNum = 1
+                if respuestaCandidato == "b":
+                    alternativaCandidatoEnNum = 2
+                if respuestaCandidato == "c":
+                    alternativaCandidatoEnNum = 3
+
+                distancia = abs(alternativaCandidatoEnNum-alternativaUsuarioEnNum)
+                porcentaje = 1-((distancia)/(3))
+                porcentajes.append(porcentaje)
+            if i == 4 or i in range(9,11):
+
+                alternativaUsuarioEnNum = 0
+                alternativaCandidatoEnNum = 0
+                if respuestaUsuario == "a":
+                    alternativaUsuarioEnNum = 1
+                if respuestaUsuario == "b":
+                    alternativaUsuarioEnNum = 2
+
+                if respuestaCandidato == "a":
+                    alternativaCandidatoEnNum = 1
+                if respuestaCandidato == "b":
+                    alternativaCandidatoEnNum = 2
+                distancia = abs(alternativaCandidatoEnNum-alternativaUsuarioEnNum)
+                porcentaje = 1-((distancia)/(2))
+                porcentajes.append(porcentaje)   
+            i+=1
+
+
+        preferenciaAfin=[]
+        for porcentaje,preferencia in zip(porcentajes,preferencias):
+            if preferencia == 5:
+                preferenciaAfin.append(porcentaje)
+            if preferencia == 4:
+                preferenciaAfin.append(porcentaje*0.8)
+            if preferencia == 3:
+                preferenciaAfin.append(porcentaje*0.6)
+            if preferencia == 2:
+                preferenciaAfin.append(porcentaje*0.4)
+            if preferencia == 1:
+                preferenciaAfin.append(porcentaje*0.2)
+        preferenciasDecimal =[]
+        for p in preferencias:
+            if p == 5:
+                preferenciasDecimal.append(1)
+            if p == 4:
+                preferenciasDecimal.append(0.8)
+            if p == 3:
+                preferenciasDecimal.append(0.6)
+            if p == 2:
+                preferenciasDecimal.append(0.4)
+            if p == 1:
+                preferenciasDecimal.append(0.2)
+
+        return (100*(sum(preferenciaAfin)/sum(preferenciasDecimal)),statistics.pstdev(preferenciaAfin))
+
+
+
+    datos = pd.read_excel("Base_datos_sistema_elige_constituyentes.xlsx")
+    usuariosDummy = pd.read_excel("Base_datos_sistema_elige_constituyentes.xlsx", sheet_name = "Respuestas usuariosas")
+    del datos['N']
+    del usuariosDummy['N']
+
+    Raquel = datos["Raquel Mardones"].tolist()
+    Valeria = datos["Valeria Vasquez"].tolist()
+    Sebastian = datos["Sebastián Paillacán"].tolist()
+    Juan = datos["Juán Perez"].tolist()
+    Camila = datos["Camila Donoso"].tolist()
+    Cristobal =  datos["Cristóbal Martínez"].tolist()
+    Jose  = datos["José González"].tolist()
+    Valentina = datos["Valentina Muñoz"].tolist()
+    Juana = usuariosDummy["Juana Flores"].tolist()
+    Ignacio =usuariosDummy["Ignacio Orellana"].tolist()
+    CamilaG =usuariosDummy["Camila Gutierrez"].tolist()
+    
+    postulantesRandom = [["Raquel Mardones",Raquel], ["Valeria Vasquez",Valeria], 
+                  ["Sebastián Paillacán",Sebastian],["Juán Perez",Juan],
+                  ["Camila Donoso",Camila], ["Cristóbal Martínez",Cristobal], 
+                  ["Jose González",Jose], ["Valentina Muñoz",Valentina]]
+    for i in postulantesRandom:
+        i.append(obtnerPorcentajeDeAfinidad(listaRandom, i[1], preferencias))
+
+    postulantesCamila= [["Raquel Mardones",Raquel], ["Valeria Vasquez",Valeria], 
+                  ["Sebastián Paillacán",Sebastian],["Juán Perez",Juan],
+                  ["Camila Donoso",Camila], ["Cristóbal Martínez",Cristobal], 
+                  ["Jose González",Jose], ["Valentina Muñoz",Valentina]]
+    
+    for i in postulantesCamila:
+        i.append(obtnerPorcentajeDeAfinidad(CamilaG, i[1], preferencias))
+    
+    postulantesIgnacio= [["Raquel Mardones",Raquel], ["Valeria Vasquez",Valeria], 
+                  ["Sebastián Paillacán",Sebastian],["Juán Perez",Juan],
+                  ["Camila Donoso",Camila], ["Cristóbal Martínez",Cristobal], 
+                  ["Jose González",Jose], ["Valentina Muñoz",Valentina]]
+    for i in postulantesIgnacio:
+        i.append(obtnerPorcentajeDeAfinidad(Ignacio, i[1], preferencias))
+    
+    postulantesJuana= [["Raquel Mardones",Raquel, obtnerPorcentajeDeAfinidad(Juana,Raquel,preferencias)], ["Valeria Vasquez",Valeria, obtnerPorcentajeDeAfinidad(Juana,Valeria,preferencias)], 
+                  ["Sebastián Paillacán",Sebastian,obtnerPorcentajeDeAfinidad(Juana,Sebastian,preferencias)],["Juán Perez",Juan,obtnerPorcentajeDeAfinidad(Juana,Juan,preferencias)],
+                  ["Camila Donoso",Camila,obtnerPorcentajeDeAfinidad(Juana,Camila,preferencias)], ["Cristóbal Martínez",Cristobal,obtnerPorcentajeDeAfinidad(Juana,Cristobal,preferencias)], 
+                  ["Jose González",Jose,obtnerPorcentajeDeAfinidad(Juana,Jose,preferencias)], ["Valentina Muñoz",Valentina,obtnerPorcentajeDeAfinidad(Juana,Valentina,preferencias)]]
+    for i in postulantesJuana:
+        i.append(obtnerPorcentajeDeAfinidad(Juana, i[1], preferencias))
+                 
+    
+    return (postulantesRandom,postulantesCamila,postulantesIgnacio,postulantesJuana)
+
+    
+def my_max(lista):
+        maximum = lista[0]
+
+        for item in lista:
+            if item[2] > maximum[2]:
+                maximum = item
+
+        return maximum    
+def my_min(lista):
+        maximum = lista[0]
+
+        for item in lista:
+            if item[3] < maximum[3]:
+                maximum = item
+
+        return maximum 
+
+def checkearEmpate(nombre, listaTop,preferencia,lista):
+        if len(listaTop) > 1:
+            print("hay un empate! Se ha iniciado el repechaje")
+            print(f"preferencia del empate: {preferencia}")
+            print(f"lista del empate: {lista}")
+            listaTopPorDesv = sorted(listaTop,key = lambda x: x[2][1] )
+            print(f"el ganador del repechaje es {listaTopPorDesv[0][0]}")
+        else:
+            pass
+            #en vez de decir los ganadores cuando no hay empate, solo dice si hay empates (que es lo que se busca)
+            """
+            print("no hay empates")
+            print(f"el recomendado de {nombre} es: {listaTop[0][0]}, pues tiene un porcentaje de {listaTop[0][2][0]}")   
+            """    
+    
+
+for i in range(1000): #crea 1000 usuarios y 1000 listas de preferencias random para buscar empates
+    preferencia = []
+    opciones = [1,2,3,4,5]
+    for i in range(22):
+        preferencia.append(random.choice(opciones))
+
+    alternativas = ["a","b","c","d","e"]
+    personaRandom = []
+    a = [elegirCuatro() for i in range(3) ]+[elegirDos()]+[elegirTres()]+[elegirCuatro()]+[elegirCinco()]+[elegirCuatro()]+[elegirDos() for i in range(2)]+[elegirCuatro() for i in range(3)]
+    b = [ elegirTres() for i in range(2)]+[elegirCuatro() for i in range(3)]+[elegirCinco()]+[ elegirTres() for i in range(2)]+[elegirCuatro()]
+
+    listaRandom = a+b
+    
+    ordenadoCamila = sorted(obtnerPorcentajeDeAfinidadPreferencial(preferencia,listaRandom)[1], key = lambda x: x[2][0], reverse=True)
+    ordenadoIgnacio = sorted(obtnerPorcentajeDeAfinidadPreferencial(preferencia,listaRandom)[2], key = lambda x: x[2][0], reverse=True)
+    ordenadoJuana = sorted(obtnerPorcentajeDeAfinidadPreferencial(preferencia,listaRandom)[3], key = lambda x: x[2][0], reverse=True)
+    ordenadoRandom = sorted(obtnerPorcentajeDeAfinidadPreferencial(preferencia,listaRandom)[0], key = lambda x: x[2][0], reverse=True)
+     
+
+
+
+    top3C= [ordenadoCamila[0]]
+    for i in ordenadoCamila:
+         if i[2][0]==top3C[0][2][0] and i[0]!=top3C[0][0]:
+            top3C.append(i)
+
+    top3I= [ordenadoIgnacio[0]]
+    for i in ordenadoIgnacio:
+         if i[2][0]==top3I[0][2][0] and i[0]!=top3I[0][0]:
+            top3I.append(i)
+
+    top3J= [ordenadoJuana[0]]
+    for i in ordenadoJuana:
+         if i[2][0]==top3J[0][2][0] and i[0]!=top3J[0][0]:
+            top3J.append(i)
+
+    top3R = [ordenadoRandom[0]]
+    for i in ordenadoRandom:
+         if i[2][0]==top3R[0][2][0] and i[0]!=top3R[0][0]:
+            top3R.append(i)
+
+    """
+    topDesv= [ordenadoDesvCamila[0]]
+    for i in ordenadoDesvCamila:
+         if i[2][1]==topDesv[0][2][1]  and i[0]!=topDesv[0][0]:
+            topDesv.append(i)          
+    """
+    
+
+    checkearEmpate("Camila",top3C,preferencia,listaRandom)
+    checkearEmpate("Ignacio",top3I,preferencia,listaRandom)
+    checkearEmpate("Juana",top3J,preferencia,listaRandom)
+    checkearEmpate("Persona random",top3R,preferencia,listaRandom)
+
+\end{lstlisting}
+\subsection{Apéndice 2}
+\begin{lstlisting}[language=Python]
+#se incluyen las librerias necesarias
+import pandas as pd #leer excel con datos
+import numpy as np #trabaja datos
+import random #permite obtener datos random
+import statistics #importa a la desviacion estandar y promedio
+import math #incluye funciones matematicas
+
+
+
+#las siguientes cuatro funciones eligen una alternativa de una pregunta con la cantidad de alternativas correspondiente
+def elegirDos():
+    lista = ["a","b"]
+    return random.choice(lista)
+def elegirTres():
+    lista = ["a","b","c"]
+    return random.choice(lista)
+def elegirCuatro():
+    lista = ["a","b","c","d"]
+    return random.choice(lista)
+def elegirCinco():
+    lista = ["a","b","c","d","e"]
+    return random.choice(lista)
+alternativas = ["a","b","c","d"]
+personaRandom = []
+
+#incluye a los datos del excel
+datos = pd.read_excel("Base_datos_sistema_elige_constituyentes.xlsx")
+usuariosDummy = pd.read_excel("Base_datos_sistema_elige_constituyentes.xlsx", sheet_name = "Respuestas usuariosas")
+#eliminan una columna innecesaria
+del datos['N']
+del usuariosDummy['N']
+#datos de los usuarios dados
+Juana = usuariosDummy["Juana Flores"].tolist()
+Ignacio =usuariosDummy["Ignacio Orellana"].tolist()
+CamilaG =usuariosDummy["Camila Gutierrez"].tolist()
+
+
+#funcion que permite obtener los porcentajes de un usuario con respecto a todos los candidatos
+def obtenerPctje(persona): #toma a input a las alternativas de un usuario
+    #funcion embed: obtiene el coeficiente de afinidad con un candidato
+    def obtnerPorcentajeDeAfinidad(respuestasUsuario,respuestasCandidato):
+        porcentajes = []
+        i=1
+        for respuestaUsuario,respuestaCandidato in zip(respuestasUsuario,respuestasCandidato):
+            if i == 7 or i in range(18,20):#asigna ptje para las preguntas de 5 alternativas
+
+                alternativaUsuarioEnNum = 0
+                alternativaCandidatoEnNum = 0
+                if respuestaUsuario == "a":
+                    alternativaUsuarioEnNum = 1
+                if respuestaUsuario == "b":
+                    alternativaUsuarioEnNum = 2
+                if respuestaUsuario == "c":
+                    alternativaUsuarioEnNum = 3
+                if respuestaUsuario == "d":
+                    alternativaUsuarioEnNum = 4
+                if respuestaUsuario == "e":
+                    alternativaUsuarioEnNum = 5
+                if respuestaCandidato == "a":
+                    alternativaCandidatoEnNum = 1
+                if respuestaCandidato == "b":
+                    alternativaCandidatoEnNum = 2
+                if respuestaCandidato == "c":
+                    alternativaCandidatoEnNum = 3
+                if respuestaCandidato == "d":
+                    alternativaCandidatoEnNum = 4
+                if respuestaCandidato == "e":
+                    alternativaCandidatoEnNum = 5
+                distancia = abs(alternativaCandidatoEnNum-alternativaUsuarioEnNum)
+                porcentaje = 1-((distancia)/(5)) #obtiene el coeficiente para la pregunta
+                porcentajes.append(porcentaje) #lo guarda en una lista
+
+            if i in range(1,4) or i == 6 or i == 8 or i in range(11,14) or i in range(16,18) or i == 22: 
+            #idem para 4
+                alternativaUsuarioEnNum = 0
+                alternativaCandidatoEnNum = 0
+                if respuestaUsuario == "a":
+                    alternativaUsuarioEnNum = 1
+                if respuestaUsuario == "b":
+                    alternativaUsuarioEnNum = 2
+                if respuestaUsuario == "c":
+                    alternativaUsuarioEnNum = 3
+                if respuestaUsuario == "d":
+                    alternativaUsuarioEnNum = 4
+
+                if respuestaCandidato == "a":
+                    alternativaCandidatoEnNum = 1
+                if respuestaCandidato == "b":
+                    alternativaCandidatoEnNum = 2
+                if respuestaCandidato == "c":
+                    alternativaCandidatoEnNum = 3
+                if respuestaCandidato == "d":
+                    alternativaCandidatoEnNum = 4
+
+                distancia = abs(alternativaCandidatoEnNum-alternativaUsuarioEnNum)
+                porcentaje = 1-(abs(alternativaCandidatoEnNum-alternativaUsuarioEnNum))/(4)
+                porcentajes.append(porcentaje)
+            if i == 5 or i in range(14,16) or i in range(20,22):
+            #idem para 3
+                alternativaUsuarioEnNum = 0
+                alternativaCandidatoEnNum = 0
+                if respuestaUsuario == "a":
+                    alternativaUsuarioEnNum = 1
+                if respuestaUsuario == "b":
+                    alternativaUsuarioEnNum = 2
+                if respuestaUsuario == "c":
+                    alternativaUsuarioEnNum = 3
+
+                if respuestaCandidato == "a":
+                    alternativaCandidatoEnNum = 1
+                if respuestaCandidato == "b":
+                    alternativaCandidatoEnNum = 2
+                if respuestaCandidato == "c":
+                    alternativaCandidatoEnNum = 3
+
+                distancia = abs(alternativaCandidatoEnNum-alternativaUsuarioEnNum)
+                porcentaje = 1-((distancia)/(3))
+                porcentajes.append(porcentaje)
+            if i == 4 or i in range(9,11):
+            #idem para 2
+                alternativaUsuarioEnNum = 0
+                alternativaCandidatoEnNum = 0
+                if respuestaUsuario == "a":
+                    alternativaUsuarioEnNum = 1
+                if respuestaUsuario == "b":
+                    alternativaUsuarioEnNum = 2
+
+                if respuestaCandidato == "a":
+                    alternativaCandidatoEnNum = 1
+                if respuestaCandidato == "b":
+                    alternativaCandidatoEnNum = 2
+                distancia = abs(alternativaCandidatoEnNum-alternativaUsuarioEnNum)
+                porcentaje = 1-((distancia)/(2))
+                porcentajes.append(porcentaje)   
+            
+            i+=1
+        
+        return porcentajes  #da la lista de coeficientes de afindiad con un candidato
+    datos = pd.read_excel("Base_datos_sistema_elige_constituyentes.xlsx")
+    usuariosDummy = pd.read_excel("Base_datos_sistema_elige_constituyentes.xlsx", sheet_name = "Respuestas usuariosas")
+    del datos['N']
+    del usuariosDummy['N']
+    #se carga las soluciones de cada candidato
+    Raquel = datos["Raquel Mardones"].tolist() 
+    Valeria = datos["Valeria Vasquez"].tolist()
+    Sebastian = datos["Sebastián Paillacán"].tolist()
+    Juan = datos["Juán Perez"].tolist()
+    Camila = datos["Camila Donoso"].tolist()
+    Cristobal =  datos["Cristóbal Martínez"].tolist()
+    Jose  = datos["José González"].tolist()
+    Valentina = datos["Valentina Muñoz"].tolist()
+    
+    postulantes= [["Raquel Mardones",Raquel], ["Valeria Vasquez",Valeria], 
+              ["Sebastián Paillacán",Sebastian],["Juán Perez",Juan],
+              ["Camila Donoso",Camila], ["Cristóbal Martínez",Cristobal], 
+              ["Jose González",Jose], ["Valentina Muñoz",Valentina]]
+    
+    uber = [] 
+    for i in postulantes:
+        uber.append(obtnerPorcentajeDeAfinidad(persona,i[1]))
+        matos = statistics.mean(obtnerPorcentajeDeAfinidad(persona,i[1]))
+        i.append(matos) # guarda los promedios de los coeficientes de afinidad por pregunta de cada candidato con el usuario
+
+    for i in postulantes:
+        desviacion = statistics.pstdev(obtnerPorcentajeDeAfinidad(persona,i[1]))
+        i.append(desviacion) #idem para desviacion estandar
+   
+    
+    return postulantes #da una lista que contiene a cada postulante con su
+                       #respectivo coeficiente de afinidad y desviacion estandar
+
+
+
+def my_max(lista): #función que obtiene el candidato con el coeficiente de afinidad total mayor
+        maximum = lista[0]
+
+        for item in lista:
+            if item[2] > maximum[2]:
+                maximum = item
+
+        return maximum    
+
+   
+def my_min(lista):#función que obtiene el candidato con la desviacion de afinidad total menor
+        maximum = lista[0]
+
+        for item in lista:
+            if item[3] < maximum[3]:
+                maximum = item
+
+        return maximum 
+
+
+CamilaPctj = obtenerPctje(CamilaG) #se obtiene coef. de afin. total y desv. estandar de camila con cada candidato
+porcentajeMayorC = my_max(CamilaPctj) # se obtiene el candidato con el mayor coef. de afin. tot.
+ 
+
+IgnacioPctj = obtenerPctje(Ignacio) #idem para ignacio
+porcentajeMayorI = my_max(IgnacioPctj) #idem
+     
+JuanaPctj = obtenerPctje(Juana) #idem para juana
+porcentajeMayorJ = my_max(JuanaPctj)#idem
+     
+
+
+
+def checkerEmpate(listaTop,listaUsuario):
+#revisa si hay empates, tiene como input una lista ordenada de mayor coef. de afin. tot a menor. 
+    
+    max_1 = listaTop[0] #obtiene el mayor coef. (el primero)
+    max_1Pctj = round(max_1[2],2)
+    empate = False
+
+    for i in listaTop:
+        if i[0]!=max_1[0]and round(i[2],2) == max_1Pctj: #verifica si hay empates
+            
+            print("se encontró un empate!")
+            print(f"alternativas marcadas para el empate: {listaUsuario}")
+            empate = True
+            listaTopPorDesv = sorted(listaTop,key = lambda x: x[3] )
+            print(f"el ganador del repechaje según desviación estandar es {listaTopPorDesv[0][0]}")
+            
+    if not empate:#si no hay empates, da el ganador
+        
+        print("no hay un empate")
+        print(f"El postulante recomendado para la persona random es: {max_1[0]}; ya que tienen un porcentaje de afinidad total de: {max_1[2]*100}%")
+        
+
+
+a = [elegirCuatro() for i in range(3) ]+[elegirDos()]+[elegirTres()]+[elegirCuatro()]+[elegirCinco()]+[elegirCuatro()]+[elegirDos() for i in range(2)]+[elegirCuatro() for i in range(3)]
+#4*3+2+3+4+5+4+2*2+4*3+3*2+4*3+5+3*2+4
+
+b = [ elegirTres() for i in range(2)]+[elegirCuatro() for i in range(3)]+[elegirCinco()]+[ elegirTres() for i in range(2)]+[elegirCuatro()]
+
+listaRandom = a+b #alternativas de un usuario random
+PersonaRandom = obtenerPctje(listaRandom) #se obtiene el pctje de afin. tot. y desv. std. para el usuario random con cada candidato
+porcentajeMayorRandom = my_max(PersonaRandom) #busca el pctje maximo
+desvMenorRandom = my_min(PersonaRandom) #busca la desviacion minima
+ordenadoRandom = sorted(PersonaRandom, key = lambda x: x[2], reverse=True) #ordena de manyor a menor la lista de coef. afin. tot. 
+checkerEmpate(ordenadoRandom, listaRandom) # revisa si hay empate
+    
+    
+
+print(f"El postulante recomendado para Camila Gutierrez es: {porcentajeMayorC[0]}; ya que tienen un porcentaje de afinidad total de: {porcentajeMayorC[2]*100}%")
+print(f"El postulante recomendado para Ignacio Orellana es: {porcentajeMayorI[0]}; ya que tienen un porcentaje de afinidad total de: {porcentajeMayorI[2]*100}%")
+print(f"El postulante recomendado para Juana Flores es: {porcentajeMayorJ[0]}; ya que tienen un porcentaje de afinidad total de: {porcentajeMayorJ[2]*100}%")
+\end{lstlisting}
+\subsection{Apéndice 3}
+\begin{lstlisting}[language=Python]
+# se importan todos los modulos necesarios
+import pandas as pd
+import numpy as np
+import random
+import statistics
+import math
+
+# funciones que seleccionan una alternativa dependiendo de la cantidad de ellas por pregunta
+
+def elegirDos():
+    lista = ["a","b"]
+    return random.choice(lista)
+def elegirTres():
+    lista = ["a","b","c"]
+    return random.choice(lista)
+def elegirCuatro():
+    lista = ["a","b","c","d"]
+    return random.choice(lista)
+def elegirCinco():
+    lista = ["a","b","c","d","e"]
+    return random.choice(lista)
+
+
+# funcion que obtiene el coef. de afin. pref (cap) y desviacion estandar .
+def obtnerPorcentajeDeAfinidadPreferencial(preferencias, listaRandom):
+    #toma como input a las preferencias de un usuario (generadas random) y una lista de respuestas
+
+    def obtnerPorcentajeDeAfinidad(respuestasUsuario,respuestasCandidato, preferencias):
+        #funcion del apéndice 2, pero luego se altera un poco
+        porcentajes = []
+        i=1
+        for respuestaUsuario,respuestaCandidato in zip(respuestasUsuario,respuestasCandidato):
+            if i == 7 or i in range(18,20):#5
+
+                alternativaUsuarioEnNum = 0
+                alternativaCandidatoEnNum = 0
+                if respuestaUsuario == "a":
+                    alternativaUsuarioEnNum = 1
+                if respuestaUsuario == "b":
+                    alternativaUsuarioEnNum = 2
+                if respuestaUsuario == "c":
+                    alternativaUsuarioEnNum = 3
+                if respuestaUsuario == "d":
+                    alternativaUsuarioEnNum = 4
+                if respuestaUsuario == "e":
+                    alternativaUsuarioEnNum = 5
+                if respuestaCandidato == "a":
+                    alternativaCandidatoEnNum = 1
+                if respuestaCandidato == "b":
+                    alternativaCandidatoEnNum = 2
+                if respuestaCandidato == "c":
+                    alternativaCandidatoEnNum = 3
+                if respuestaCandidato == "d":
+                    alternativaCandidatoEnNum = 4
+                if respuestaCandidato == "e":
+                    alternativaCandidatoEnNum = 5
+                distancia = abs(alternativaCandidatoEnNum-alternativaUsuarioEnNum)
+                porcentaje = 1-((distancia)/(5))
+                porcentajes.append(porcentaje)
+
+            if i in range(1,4) or i == 6 or i == 8 or i in range(11,14) or i in range(16,18) or i == 22: 
+
+                alternativaUsuarioEnNum = 0
+                alternativaCandidatoEnNum = 0
+                if respuestaUsuario == "a":
+                    alternativaUsuarioEnNum = 1
+                if respuestaUsuario == "b":
+                    alternativaUsuarioEnNum = 2
+                if respuestaUsuario == "c":
+                    alternativaUsuarioEnNum = 3
+                if respuestaUsuario == "d":
+                    alternativaUsuarioEnNum = 4
+
+                if respuestaCandidato == "a":
+                    alternativaCandidatoEnNum = 1
+                if respuestaCandidato == "b":
+                    alternativaCandidatoEnNum = 2
+                if respuestaCandidato == "c":
+                    alternativaCandidatoEnNum = 3
+                if respuestaCandidato == "d":
+                    alternativaCandidatoEnNum = 4
+
+                distancia = abs(alternativaCandidatoEnNum-alternativaUsuarioEnNum)
+                porcentaje = 1-(abs(alternativaCandidatoEnNum-alternativaUsuarioEnNum))/(4)
+                porcentajes.append(porcentaje)
+            if i == 5 or i in range(14,16) or i in range(20,22):
+
+                alternativaUsuarioEnNum = 0
+                alternativaCandidatoEnNum = 0
+                if respuestaUsuario == "a":
+                    alternativaUsuarioEnNum = 1
+                if respuestaUsuario == "b":
+                    alternativaUsuarioEnNum = 2
+                if respuestaUsuario == "c":
+                    alternativaUsuarioEnNum = 3
+
+                if respuestaCandidato == "a":
+                    alternativaCandidatoEnNum = 1
+                if respuestaCandidato == "b":
+                    alternativaCandidatoEnNum = 2
+                if respuestaCandidato == "c":
+                    alternativaCandidatoEnNum = 3
+
+                distancia = abs(alternativaCandidatoEnNum-alternativaUsuarioEnNum)
+                porcentaje = 1-((distancia)/(3))
+                porcentajes.append(porcentaje)
+            if i == 4 or i in range(9,11):
+
+                alternativaUsuarioEnNum = 0
+                alternativaCandidatoEnNum = 0
+                if respuestaUsuario == "a":
+                    alternativaUsuarioEnNum = 1
+                if respuestaUsuario == "b":
+                    alternativaUsuarioEnNum = 2
+
+                if respuestaCandidato == "a":
+                    alternativaCandidatoEnNum = 1
+                if respuestaCandidato == "b":
+                    alternativaCandidatoEnNum = 2
+                distancia = abs(alternativaCandidatoEnNum-alternativaUsuarioEnNum)
+                porcentaje = 1-((distancia)/(2))
+                porcentajes.append(porcentaje)   
+            i+=1
+
+        #se multiplica a la preferencia (en pctje obtenidos con la formula mostrada) por el cap correspondiente
+        #asi se obtiene psi sub i
+        preferenciaAfin=[]
+        for porcentaje,preferencia in zip(porcentajes,preferencias):
+            if preferencia == 5:
+                preferenciaAfin.append(porcentaje)
+            if preferencia == 4:
+                preferenciaAfin.append(porcentaje*0.8)
+            if preferencia == 3:
+                preferenciaAfin.append(porcentaje*0.6)
+            if preferencia == 2:
+                preferenciaAfin.append(porcentaje*0.4)
+            if preferencia == 1:
+                preferenciaAfin.append(porcentaje*0.2)
+        preferenciasDecimal =[]
+        #lista que contiene las preferencias en pctje por pregunta
+        for p in preferencias:
+            if p == 5:
+                preferenciasDecimal.append(1)
+            if p == 4:
+                preferenciasDecimal.append(0.8)
+            if p == 3:
+                preferenciasDecimal.append(0.6)
+            if p == 2:
+                preferenciasDecimal.append(0.4)
+            if p == 1:
+                preferenciasDecimal.append(0.2)
+        #retorna el valor conocido como psi sub t.
+        return (100*(sum(preferenciaAfin)/sum(preferenciasDecimal)),statistics.pstdev(preferenciaAfin))
+
+
+    #ídem de apéndice 2
+    datos = pd.read_excel("Base_datos_sistema_elige_constituyentes.xlsx")
+    usuariosDummy = pd.read_excel("Base_datos_sistema_elige_constituyentes.xlsx", sheet_name = "Respuestas usuariosas")
+    del datos['N']
+    del usuariosDummy['N']
+
+    Raquel = datos["Raquel Mardones"].tolist()
+    Valeria = datos["Valeria Vasquez"].tolist()
+    Sebastian = datos["Sebastián Paillacán"].tolist()
+    Juan = datos["Juán Perez"].tolist()
+    Camila = datos["Camila Donoso"].tolist()
+    Cristobal =  datos["Cristóbal Martínez"].tolist()
+    Jose  = datos["José González"].tolist()
+    Valentina = datos["Valentina Muñoz"].tolist()
+    Juana = usuariosDummy["Juana Flores"].tolist()
+    Ignacio =usuariosDummy["Ignacio Orellana"].tolist()
+    CamilaG =usuariosDummy["Camila Gutierrez"].tolist()
+    
+    postulantesRandom = [["Raquel Mardones",Raquel], ["Valeria Vasquez",Valeria], 
+                  ["Sebastián Paillacán",Sebastian],["Juán Perez",Juan],
+                  ["Camila Donoso",Camila], ["Cristóbal Martínez",Cristobal], 
+                  ["Jose González",Jose], ["Valentina Muñoz",Valentina]]
+    #se obtiene el psi sub t para cada usuario y candidato. 
+    for i in postulantesRandom:
+        i.append(obtnerPorcentajeDeAfinidad(listaRandom, i[1], preferencias))
+
+    postulantesCamila= [["Raquel Mardones",Raquel], ["Valeria Vasquez",Valeria], 
+                  ["Sebastián Paillacán",Sebastian],["Juán Perez",Juan],
+                  ["Camila Donoso",Camila], ["Cristóbal Martínez",Cristobal], 
+                  ["Jose González",Jose], ["Valentina Muñoz",Valentina]]
+    
+    for i in postulantesCamila:
+        i.append(obtnerPorcentajeDeAfinidad(CamilaG, i[1], preferencias))
+    
+    postulantesIgnacio= [["Raquel Mardones",Raquel], ["Valeria Vasquez",Valeria], 
+                  ["Sebastián Paillacán",Sebastian],["Juán Perez",Juan],
+                  ["Camila Donoso",Camila], ["Cristóbal Martínez",Cristobal], 
+                  ["Jose González",Jose], ["Valentina Muñoz",Valentina]]
+    for i in postulantesIgnacio:
+        i.append(obtnerPorcentajeDeAfinidad(Ignacio, i[1], preferencias))
+    
+    postulantesJuana= [["Raquel Mardones",Raquel, obtnerPorcentajeDeAfinidad(Juana,Raquel,preferencias)], ["Valeria Vasquez",Valeria, obtnerPorcentajeDeAfinidad(Juana,Valeria,preferencias)], 
+                  ["Sebastián Paillacán",Sebastian,obtnerPorcentajeDeAfinidad(Juana,Sebastian,preferencias)],["Juán Perez",Juan,obtnerPorcentajeDeAfinidad(Juana,Juan,preferencias)],
+                  ["Camila Donoso",Camila,obtnerPorcentajeDeAfinidad(Juana,Camila,preferencias)], ["Cristóbal Martínez",Cristobal,obtnerPorcentajeDeAfinidad(Juana,Cristobal,preferencias)], 
+                  ["Jose González",Jose,obtnerPorcentajeDeAfinidad(Juana,Jose,preferencias)], ["Valentina Muñoz",Valentina,obtnerPorcentajeDeAfinidad(Juana,Valentina,preferencias)]]
+    for i in postulantesJuana:
+        i.append(obtnerPorcentajeDeAfinidad(Juana, i[1], preferencias))
+                 
+    """
+    se retornan varias cosas:
+    - lista de los psi sub t de un usuario random con cada candidato
+    - lista de los psi sub t de camila random con cada candidato
+    - idem ignacio
+    - idem juana
+    
+    """
+    return (postulantesRandom,postulantesCamila,postulantesIgnacio,postulantesJuana)
+
+    
+def my_max(lista): #funcion ya conocida
+        maximum = lista[0]
+
+        for item in lista:
+            if item[2] > maximum[2]:
+                maximum = item
+
+        return maximum    
+def my_min(lista):
+        maximum = lista[0]
+
+        for item in lista:
+            if item[3] < maximum[3]:
+                maximum = item
+
+        return maximum 
+
+def checkearEmpate(nombre, listaTop,preferencia,lista): 
+    #tiene como imput una lista ordenada de los psi sub de de forma descendiente
+    #busca empates para camila, el usuario random, etc...
+        if len(listaTop) > 1: # si hay empates va a repechaje con desv. est.
+            print("hay un empate! Se ha iniciado el repechaje")
+            print(f"preferencia del empate: {preferencia}")
+            print(f"lista del empate: {lista}")
+            listaTopPorDesv = sorted(listaTop,key = lambda x: x[2][1] )
+            print(f"el ganador del repechaje es {listaTopPorDesv[0][0]}")
+        else:# si no hay empate, se dice el ganador por psi sub t.
+            
+            print("no hay empates")
+            print(f"el recomendado de {nombre} es: {listaTop[0][0]}, pues tiene un porcentaje de {listaTop[0][2][0]}")   
+              
+    
+
+
+preferencia = []
+opciones = [1,2,3,4,5]
+for i in range(22):#genera 22 preferencias random
+    preferencia.append(random.choice(opciones))
+
+alternativas = ["a","b","c","d","e"]
+personaRandom = []
+a = [elegirCuatro() for i in range(3) ]+[elegirDos()]+[elegirTres()]+[elegirCuatro()]+[elegirCinco()]+[elegirCuatro()]+[elegirDos() for i in range(2)]+[elegirCuatro() for i in range(3)]
+b = [ elegirTres() for i in range(2)]+[elegirCuatro() for i in range(3)]+[elegirCinco()]+[ elegirTres() for i in range(2)]+[elegirCuatro()]
+
+listaRandom = a+b #genera alternativas random
+
+# se obtienen las listas ordenadas ascendientemente segun psi sub t para cada usuario
+ordenadoCamila = sorted(obtnerPorcentajeDeAfinidadPreferencial(preferencia,listaRandom)[1], key = lambda x: x[2][0], reverse=True)
+
+ordenadoIgnacio = sorted(obtnerPorcentajeDeAfinidadPreferencial(preferencia,listaRandom)[2], key = lambda x: x[2][0], reverse=True)
+
+ordenadoJuana = sorted(obtnerPorcentajeDeAfinidadPreferencial(preferencia,listaRandom)[3], key = lambda x: x[2][0], reverse=True)
+
+ordenadoRandom = sorted(obtnerPorcentajeDeAfinidadPreferencial(preferencia,listaRandom)[0], key = lambda x: x[2][0], reverse=True)
+
+
+
+# se busca para cada usuario los candidatos que tienen el mismo psi sub t (caso de empate)
+top3C= [ordenadoCamila[0]]
+for i in ordenadoCamila:
+     if i[2][0]==top3C[0][2][0] and i[0]!=top3C[0][0]:
+            top3C.append(i)
+
+top3I= [ordenadoIgnacio[0]]
+for i in ordenadoIgnacio:
+     if i[2][0]==top3I[0][2][0] and i[0]!=top3I[0][0]:
+            top3I.append(i)
+
+top3J= [ordenadoJuana[0]]
+for i in ordenadoJuana:
+     if i[2][0]==top3J[0][2][0] and i[0]!=top3J[0][0]:
+            top3J.append(i)
+
+top3R = [ordenadoRandom[0]]
+for i in ordenadoRandom:
+     if i[2][0]==top3R[0][2][0] and i[0]!=top3R[0][0]:
+            top3R.append(i)
+
+
+topDesv= [ordenadoDesvCamila[0]]
+for i in ordenadoDesvCamila:
+     if i[2][1]==topDesv[0][2][1]  and i[0]!=topDesv[0][0]:
+            topDesv.append(i)          
+
+
+#se usa la funcion definida
+checkearEmpate("Camila",top3C,preferencia,listaRandom)
+checkearEmpate("Ignacio",top3I,preferencia,listaRandom)
+checkearEmpate("Juana",top3J,preferencia,listaRandom)
+checkearEmpate("Persona random",top3R,preferencia,listaRandom) 
+\end{lstlisting}
+
+
+\end{document}

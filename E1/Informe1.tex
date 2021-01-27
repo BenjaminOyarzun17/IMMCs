@@ -1,0 +1,406 @@
+\documentclass[a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{lipsum}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{pdfpages}
+\usepackage{adjustbox}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\renewcommand{\listfigurename}{Lista de figuras}
+\renewcommand{\figurename}{Figura}
+\renewcommand\contentsname{Índice}
+\newcommand\blfootnote[1]{%
+  \begingroup
+  \renewcommand\thefootnote{}\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
+\renewcommand{\listtablename}{Lista de tablas}
+\renewcommand{\tablename}{Tabla}
+\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{M}[1]{>{\centering\arraybackslash}m{#1}}
+
+
+
+
+\begin{document}
+
+
+\includepdf{Laportada.pdf}
+
+
+\newpage
+
+\tableofcontents
+\newpage
+\section{Reformulación de la situación}
+Debemos proponer 2 tarifas a una empresa que posee un ferry de 3 carriles de 52 metros de largo cada uno, la cual calculó que por cada viaje a capacidad máxima les sería rentable y lucrativo con el cobro de \$600.000 en total. Para eso hay que presentar 2 modelos; uno que cobre solo a los vehículos y otro que cobre a vehículos y personas. Se contemplan 4 categorías de vehículos: buses, minibuses, vehículos menores (a los que en el informe trataremos simplemente como autos)y motos.
+
+\section{Primer Modelo}
+Como la longitud de cada hilera es 52 m y el ingreso a lograr no debe ser inferior a \$600.000, cada hilera debe producir un ingreso mínimo de \$200.000, lo cual significa un ingreso de, a lo menos, \$3.847 por metro lineal.\newline\newline Usando valores promedios de longitudes de vehículos,\footnote{\url{https://www.dimensions.com/}} considerando un espacio de separación de 0,3 m entre ellos y redondeando el valor para obtener números enteros, definimos las longitudes de cada vehículo de la siguiente manera: buses: 13 m, minibuses: 8 m, autos: 5 m y motos: 2 m. Además, asumimos que la anchura de cada hilera es de 3,5 m, por lo que, en el caso de las motos, se pueden ubicar hasta tres en el espacio de 2 metros. \newline\newline Sin embargo, como la longitud de autos y minibuses no es divisor de 52, significa que si solo entran autos o minibuses en una hilera, quedará espacio sin ocupar, por lo que debemos aumentar el precio mínimo por metro para estos vehículos, dividiendo \$200.000 en la cantidad de metros efectivamente usados. Esto lo resumimos en la siguiente tabla:
+\begin{table}[h]
+    \centering
+    \begin{adjustbox}{width=1\textwidth}
+\small
+\begin{tabular}{|M{2cm}|M{2cm}|M{2cm}|M{2cm}|M{2cm}|M{2cm}|}
+       \hline
+       Vehículo&Longitud en metros & Número de vehículos en la hilera & Metros usados& Precio por metro \\
+       \hline
+       Buses&13& 4& 52& \$3.846  \\
+       \hline
+       Minibus&8  & 6 & 48&\$4.167   \\
+       \hline
+       Autos& 5 & 10 & 50&\$4.000  \\
+       \hline
+       Motos&2& 26($\cdot 3$) &52& \$3.846  \\
+       \hline
+    \end{tabular}  
+    \end{adjustbox}
+    
+\end{table}
+\newline Aquí obtenemos un límite importante: el 48. Este representa la mínima longitud en la que el ferry está a máxima capacidad de un tipo de vehículo.\newline\newline En conclusión:\newline\newline
+Redondeando el valor mayor hacia arriba, establecimos un precio por metro de \$4.200. De esa manera, independiente de qué vehículos entren al ferry, se logrará cumplir con el ingreso mínimo de \$600.000.\newline\newline Finalmente, multiplicando el precio por metro ($k$) con la longitud de cada vehículo ($l_{v}$), obtenemos la tarifa de cada vehículo ($t_{v}$): 
+\begin{align*}
+    t_{v}=l_{v}\cdot k
+\end{align*}
+Entonces surgen las siguientes tarifas:
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|M{4cm}|M{4cm}|}
+        \hline
+        Vehículo & Tarifa (CLP)\\
+         \hline
+        Buses & \$54.600 \\
+        \hline
+         Minibuses & \$33.600 \\
+         \hline
+         Autos & \$21.000 \\
+         \hline
+         Motos & \$8.400 \\
+         \hline
+    \end{tabular}
+\end{table}
+\newline
+
+Incluso podemos demostrar que el modelo da ganancias por hilera mayores a \$200.000, estando la hilera a máxima capacidad. Esto lo hacemos mediante programación lineal. Tenemos la siguiente función a minimizar: 
+\begin{align*}
+   g(x,y,z,w) = 21.000x + 8.400y + 54.600z + 33.600w\\
+\end{align*}
+Siendo $x$ la cantidad de autos, $y$ la de motos, $z$ la de buses y $w$ la de minibuses. Además tenemos las siguientes restricciones, para que la función este dentro de la longitud máxima y mínima para que la columna este llena: 
+\begin{align*}
+    5x+\frac{2}{3}y+12z+8w &\geq 48\\
+    5x+\frac{2}{3}y+12z+8w &\leq 52\\
+    21.000x + 8.400y + 54.600z + 33.600w &\geq 0\\
+\end{align*}
+Además, con la última restricción buscamos la ganancia mínima por hilera si esta está llena. Al ingresar esto en el programa del anexo 1, obtenemos que sí existe un mínimo; \$201.600, con $x = 0$, $y = 0$, $z = 0$ y $w = 6$.  Como esta combinación da un mínimo que cumple con los requisitos, no hay valores que no funcionen. \newline\newline Ahora probaremos el modelo con cantidades de vehículos más realistas. En las regiones de Aysén y de Magallanes, según el INE, aproximadamente el 96\% de los vehículos son autos, el 1,1\% son buses, otro 0,7\% son minibuses y 2,2\% son motos\footnote{\url{ https://drive.google.com/file/d/1j_5aHIf0b7WP4q6pIWOv4LitL3GZ281y/view?usp=sharing}, segunda página}. Haremos 50.000 viajes. Asumiremos que la cantidad de autos será por cada viaje entre 5 a 9 por hilera, para simular que la mayoría de los vehículos son autos, que la cantidad de buses y minibuses por hilera será por cada viaje entre 1 a 2, para emular que la minoría de los vehículos son buses y minibuses y que la cantidad de motos por hilera por viaje será entre 1 a 3, para representar que la minoría de los vehículos son motos.\newline\newline Cada viaje tendrá valores aleatorios de acuerdo a las limitaciones que mostramos. Calculando el promedio de todas las ganancias, obtenemos que por hilera se ganan \$216.000, valor que representa la ganancia esperada por viaje (ver programa en el anexo 2).
+
+\subsection{Limitaciones del modelo y cómo superarlas}
+Tuvimos que subir el valor del metro lineal para poder estar siempre sobre \$600.000, lo que generó precios altos.  Si comparamos nuestras tarifas con otras, por ejemplo, con las del ferry del canal Chacao,\footnote{\url{https://elquellonino.cl/11017/estas-son-las-nuevas-tarifas-del-servicio-de-transbordadores-en-chiloe}} obtenemos que la tarifa de las motos es similar y que nuestro metro lineal es más barato, pero nuestras tarifas de buses, minibuses y autos son mucho más caras. Puede ser, sin embargo, que esta diferencia sea porque el trayecto contemplado es mayor a 25 minutos.\footnote{\url{ http://www.navieracruzdelsur.cl/}} De todas formas consideramos que los precios son muy altos, por lo que trataremos de compensar esto en el siguiente modelo. \newline\newline El modelo además depende mucho de los valores de longitud de cada vehículo, por lo que el valor promedio de las ganancias podría variar si es que el tamaño de los vehículos que llegan son muy diferentes a los promedios. Quizás se le podría dar longitudes aleatorias a los vehículos teniendo valores máximos y mínimos para cada tipo y ver lo que se obtiene al hacer esto, para así tener un modelo más realista.
+
+\section{Segundo Modelo}
+Lo que buscamos con este modelo es dar una solución alternativa al caso de los buses y autos que se dio en el modelo anterior. En vez de aumentar el valor del precio lineal de \$3.850 a \$4.200 para tener siempre ganancias, intentaremos mantener el metro lineal en \$3.850 y agregaremos una tarifa por pasajero. Esto lo haremos en el caso de los minibuses y autos, pues estos son los que presentan problemas, debido a que no usan el espacio óptimamente; usan 48/52 m y 50/52 m, respectivamente. Esto lo vemos si calculamos su tarifa manteniendo el precio del metro lineal a \$3.850 y calculando la ganancia de una hilera llena de un tipo de vehículo. Con este valor base del metro lineal, obtenemos las tarifas por vehículo multiplicando su longitud promedio por el valor del metro lineal y además redondeando a la centena. Así surge la tabla que muestra que los minibuses y autos generan pérdidas:
+\begin{table}[ht]
+    \centering
+    \begin{adjustbox}{width=1\textwidth}
+\small
+\begin{tabular}{|M{1.2cm}|M{1.2cm}|M{1.2cm}|M{1.2cm}|M{1.2cm}|M{1.2cm}|M{1.2cm}|M{1.2cm}|}
+       \hline
+      Vehículo & Tarifa por vehículo & Número de vehículos que caben por hilera&Número de personas previstas por vehículo&Total personas&
+Ganancia por hilera llena de vehículo&Déficit&Precio por pasajero extra\\
+       \hline
+      Bus & \$50.100 & 4&--&--&\$200.200&--&--\\  
+      \hline
+      Minibus & \$30.800 & 6&10&60&\$184.800&-\$15.200&\$260\\  
+      \hline
+      Auto & \$19.300 & 10&1,5&15&\$192.500&-\$7.500&\$500\\  
+      \hline
+      Moto & \$7.700 & 26($\cdot 3$)&1& 26($\cdot 3$) &\$600.600&--&--\\  
+     \hline
+    \end{tabular}
+    \end{adjustbox}
+\end{table}\newline 
+Nuestra estrategia para superar este problema es intentar que los pasajeros compensen los metros faltantes cuando una hilera está llena de solo un tipo de estos vehículos. Esto lo hacemos dividiendo el déficit en la cantidad prevista de pasajeros totales de una hilera, por ejemplo en el auto con 1,5 pasajeros por vehículo,\footnote{\url{ https://heraldodemexico.com.mx/nacional/2018/5/23/viajan-solos-de-cada-10-conductores-41678.html }} es decir 15 por hilera. Con esto llegamos a que se necesita cobrar  \$260 por cada pasajero de  minibús y \$500 por cada pasajero de auto:\newline\newline
+Para los autos:
+\begin{equation*}
+    \frac{7500}{15}=500
+\end{equation*}
+Para los minibuses:
+\begin{equation*}
+    \frac{15200}{60}=260
+\end{equation*}
+Considerando que el minibús es un organismo externo al ferry, es conveniente para ambos cobrar el valor extra en una tarifa única. Tomando en cuenta que prevemos un número neutro de pasajeros entre la máxima y mínima capacidad de 10 personas, le sumaríamos \$2600 (es decir \$260 $\cdot 10$) a la tarifa de los minibuses, entonces es la empresa de minibuses la que reparte el monto entre sus propias tarifas. En el caso del auto, como el proceso de cobranza no implica subirse al minibús a cobrarle a 10 personas, la tarifa puede ir separada por pasajero extra.
+\newline\newline Así obtenemos las tarifas: 
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|M{2cm}|M{2cm}|M{2cm}|}
+      \hline
+      Vehículo   &Tarifa &  Precio por pasajero extra\\
+      \hline
+      Minibuses   &\$33.400 &  --\\
+      \hline
+       Autos   &\$19.300 &  \$500\\
+       \hline
+    \end{tabular}
+\end{table}\newline 
+Entonces, las tarifas correspondientes al segundo modelo son:
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|M{4cm}|M{4cm}|}
+      \hline
+      Vehículo   &Tarifa \\
+      \hline
+      Buses   &\$50.100 \\
+      \hline
+      Minibuses   &\$33.400\\
+      \hline
+      Autos con conductor incluído   &\$19.300 \\
+      \hline
+     Autos: pasajero extra   &\$500 \\
+      \hline
+      Motos   &\$7.700\\
+       \hline
+    \end{tabular}
+\end{table}\newline Para demostrar que este modelo funciona, consideraremos las restricciones del modelo anterior sobre los porcentajes de vehículos de estas regiones en el extremo sur. Además la cantidad de pasajeros en los autos serán de entre 1 a 5, en vez de 1 a 9, para hacer que los datos estén más cerca del 1,5,  pero a su vez no muy lejos del 9.\newline\newline Como en el modelo anterior, cada viaje tendrá valores aleatorios de acuerdo a las anteriores limitaciones. Repetimos esto 50.000 veces y en el 20\% de los viajes se dan pérdidas aunque, calculando el promedio de todas las ganancias, obtenemos que por hilera se ganan \$207.000, por lo que el modelo a la larga siempre dará más ganancias que pérdidas (ver programa en el anexo 3).
+
+\subsection{Limitaciones del segundo modelo y cómo superarlas}
+El modelo puede generar pérdidas. En el 20\% de los casos se genera menos de lo preciso. A largo plazo, sin embargo, el promedio de ingreso esperado compensa estas pérdidas. \newline\newline Este modelo también depende de la longitud de los vehículos. No se le impuso tarifa a los buses y motos porque sus longitudes elegidas eran ideales, pero esto no será necesariamente así en la realidad, por lo que también se debería modelar una tarifa para estos vehículos para acercarse más a la realidad. 
+
+\section{Recomendación a la compañía}
+Estimada compañía naviera:\newline\newline Luego de crear dos posibles tarifas para su nuevo servicio de ferry entre las localidades de Puerto Lindo y Los Cuernos, hemos analizado las ventajas y desventajas de cada modelo, uno que considera únicamente a los vehículos, y otro a los vehículos y adicionalmente a los pasajeros. Con esto hemos llegado a la conclusión que el primer modelo es el que recomendaremos. \newline\newline Nosotros les recomendamos usar el primer modelo, porque este no genera pérdidas y además da una ganancia esperada mayor que el segundo modelo, aproximadamente \$9.000 más por hilera o \$27.000 por viaje. Por demás consideramos que es más fácil implementar el primer modelo, ya que no es necesario hacer la suma de la tarifa por vehículo con el  precio extra por pasajero, sino que directamente se puede buscar en la tabla lo que se debe pagar por tipo de vehículo. Esto entonces facilita el cobro; no hay necesidad de calcular nada. Finalmente el primer modelo también evita que se tenga personal extra dedicado a contar los pasajeros auto por auto, por lo que en general consideramos que el primer modelo, con las siguientes tarifas, es el más práctico: \begin{table}[h]
+    \centering
+    \begin{tabular}{|M{2cm}|M{2cm}|}
+        \hline
+       Vehículo  &  Tarifa \\
+       \hline
+       Buses  & \$54.600 \\
+        \hline
+       Minibuses  & \$33.600 \\
+       \hline
+       Autos  & \$21.000 \\
+       \hline
+         Motos & \$8.400 \\
+         \hline
+    \end{tabular}
+\end{table} \newline Deseando éxito con su negocio, \newline\newline un equipo del IMMC.
+
+\newpage 
+\section{Referencias}
+\url{https://docs.google.com/spreadsheets/d/1AOORg03-dBU9eJb67xqjP7U-IWLWRDOMRUkS8bzj_sQ/edit?usp=sharing}\newline\newline
+\url{https://docs.google.com/drawings/d/1_qcqNYVTd0g3Pfyy8ABUmYSlZ08tf_Jg_rOlORjF_T0/edit?usp=sharing}\newline\newline
+\url{https://drive.google.com/file/d/1Qbsub5YdaVXV-ijMBi9xpfLEosBKgkyo/view?usp=sharing}\newline\newline
+\url{https://www.visitchile.com/es/guias-chile/transporte/ferry.htm}\newline\newline
+\url{https://www.dimensions.com/}\newline\newline
+\url{http://www.navieracruzdelsur.cl/}\newline\newline
+\url{https://n9.cl/b65td}\newline\newline
+\url{https://n9.cl/q01ah}
+
+\section{Anexos}
+\subsection{Anexo 1: Demostración de que el primer modelo da siempre ganancias superiores a \$200.000}
+\begin{lstlisting}[language=Python]
+from __future__ import print_function
+from ortools.linear_solver import pywraplp
+
+
+solver = pywraplp.Solver.CreateSolver('SCIP')
+
+infinity = solver.infinity()
+x = solver.IntVar(0.0, infinity, 'x')
+y = solver.IntVar(0.0, infinity, 'y')
+z = solver.IntVar(0.0, infinity, 'z')
+w = solver.IntVar(0.0, infinity, 'w')
+#definimos los intervalos para las variables x,y,z,w. (de cero a infinito)
+#IntVar dice que solo son números enteros.
+
+solver.Add(21000*x + 8400 *y + 54600*z + 33600*w  >= 0)
+solver.Add( -5*x-2/3*y -13*z-8*w <= -48 )
+solver.Add( 5*x+2/3*y +13*z+8*w <= 52 )  
+#inecuaciones que restringen
+solver.Minimize(21000*x + 8400 *y + 54600*z + 33600*w)
+#minimizar la función 21000*x + 8400 *y + 54600*z + 33600*w 
+status = solver.Solve()
+#resolver 
+if status == pywraplp.Solver.OPTIMAL: #si se encuentra una solución, entonces se dan las soluciones. 
+    print('Solución:')
+    print('Ganancia mínima =', solver.Objective().Value())
+    print('x =', x.solution_value())
+    print('y =', y.solution_value())
+    print('z =', z.solution_value())
+    print('w =', w.solution_value())
+    
+else: #si no se encuentra una solución, se avisa. 
+    print('El problema no tiene una solución.')
+\end{lstlisting} 
+Output:
+\begin{center}
+    \includegraphics[scale = 1]{anexo1.png}
+\end{center}
+\subsection{Anexo 2: Ganancia promedio con valores más realistas}
+
+\begin{lstlisting}[language=Python]
+  
+import random
+"""
+función que retorna la ganancia de un trayecto con una cantidad random de vehículos, 
+que llenan a una hilera.
+
+"""
+def obtenerGananciaRandom():
+    autos,motos,buses,minibuses = 0,0,0,0 
+    
+    while 5*autos + 2/3*motos + 13*buses+ 8*minibuses > 52 or 5*autos + 2/3*motos + 13*buses+ 8*minibuses < 48:
+        #asigna catidades de vehículos hasta que llenen la fila
+        autos = random.randint(5,9)#1,10
+        motos = random.randint(0,3)#78
+        buses = random.randint(0,2)
+        minibuses = random.randint(0,2)
+        
+    else:
+         
+        tarifaAuto = 21000
+        tarifaMoto = 8400
+        tarifaBus = 54600
+        tarifaMinibus = 33600
+        #calcula la ganancia
+        gananciaBase = autos*tarifaAuto+motos*tarifaMoto+buses*tarifaBus+minibuses*tarifaMinibus
+        return gananciaBase  
+
+
+    
+
+intentosBuenos = []
+intentosMalos = []
+ganancias = []
+for i in range(50000): #simula 50.000 viajes
+    ganancia = obtenerGananciaRandom()
+    if ganancia < 200000: #guarda las pérdidas
+        intentosMalos.append(1)
+        ganancias.append(ganancia)
+
+    elif ganancia >=200000: #guarda las ganancias
+        intentosBuenos.append(1)
+        ganancias.append(ganancia)
+        
+fallido = sum(intentosMalos) #suma las pérdidas
+bueno = sum(intentosBuenos) #suma las ganancias
+razon = fallido/bueno #da la razón entre pérdidas y ganancias
+print(f"fallido: {fallido}") 
+print(f"acertado: {bueno}")
+print(f"razon = {razon}")
+    
+print(sum(ganancias)/len(ganancias)) #da el promedio entre ganancias y pérdidas por columna luego de 50.000 intentos
+
+
+
+\end{lstlisting} 
+
+Output:
+\begin{center}
+    \includegraphics[scale = 1]{anexo2.png}
+\end{center}
+
+\subsection{Anexo 3: Ganancia promedio del modelo 2}
+\begin{lstlisting}[language = Python]
+import random 
+
+class Auto:
+    def __init__(self,pasajeros):
+        self.pasajeros = pasajeros
+"""
+Define a un auto, que tendrá como atributo su cantidad de pasajeros
+
+"""
+    
+def obtenerGananciaRandom(): 
+#esta función nos da la ganancia por viaje, con una cantidad random de vehículos, pero que llenen la columna
+    autos,motos,buses,minibuses = 0,0,0,0 
+    objAutos = []
+    while 5*autos + 2/3*motos + 13*buses+ 8*minibuses > 52 or 5*autos + 2/3*motos + 13*buses+ 8*minibuses < 48:
+        #asigna valores random a los vehículos hasta que llenen la columna
+        autos = random.randint(5,9)#1,10
+        motos = random.randint(0,3)#78
+        buses = random.randint(0,2)
+        minibuses = random.randint(0,2)
+        
+    else:
+        for auto in range(autos):
+            objAutos.append(Auto(random.randint(1,5)))#max = 9
+         #le asigna una cantidad random de pasajeros a los autos, pero acotada de 1 a 5
+        dineroExtraAutos = []
+        for auto in objAutos:
+            dineroExtraAutos.append(500*(auto.pasajeros-1))
+        #calcula el cobro extra para cada auto dependiendo de su numero de pasajeros
+        tarifaAuto = 19300
+        tarifaMoto = 7700
+        tarifaBus = 50100 
+        tarifaMinibus = 33400
+       
+        
+        gananciaBase = autos*tarifaAuto+motos*tarifaMoto+buses*tarifaBus+minibuses*tarifaMinibus
+       #ganancia no incluuye a lo extra de los autos
+        gananciaTotal = sum(dineroExtraAutos) + gananciaBase
+        #ganancia si incluuye a lo extra de los autos
+        return gananciaTotal  
+
+
+    
+
+intentosBuenos = []
+intentosMalos = []
+ganancias = []
+for i in range(50000): #hace 50.000 viajes
+    ganancia = obtenerGananciaRandom()
+    if ganancia < 200000: #guarda los intentos que dan pérdidas
+        intentosMalos.append(1)
+        ganancias.append(ganancia)
+
+    elif ganancia >=200000: #guarda los intentos que dan ganancias
+        intentosBuenos.append(1)
+        ganancias.append(ganancia)
+        
+fallido = sum(intentosMalos) #suma pérdidas
+bueno = sum(intentosBuenos) #suma ganancias
+razon = fallido/bueno    #razón entre pérdidas y ganancias
+print(f"fallido: {fallido}") 
+print(f"acertado: {bueno}")
+print(f"razon = {razon}")
+    
+print(sum(ganancias)/len(ganancias))
+\end{lstlisting}
+Output:
+\begin{center}
+    \includegraphics[scale = 1]{anexo3.png}
+\end{center}
+\end{document}
