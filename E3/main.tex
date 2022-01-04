@@ -1,0 +1,376 @@
+\documentclass[a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{lipsum}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{pdfpages}
+\usepackage{adjustbox}
+\usepackage{xurl}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\renewcommand{\listfigurename}{Lista de figuras}
+\renewcommand{\figurename}{Figura}
+\renewcommand\contentsname{Índice}
+\newcommand\blfootnote[1]{%
+  \begingroup
+  \renewcommand\thefootnote{}\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
+\renewcommand{\listtablename}{Lista de tablas}
+\renewcommand{\tablename}{Tabla}
+\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{M}[1]{>{\centering\arraybackslash}m{#1}}
+
+
+
+
+\begin{document}
+\includepdf{portada immc3 v2.pdf}
+
+
+
+
+\newpage
+
+\newpage
+\section{Resumen}
+Para esta etapa del IM$^2$C, se pide (\textit{Top Sport}) modelar un sistema que les permita escoger al mejor atleta de todos los tiempos  según sus participaciones y/o cualidades atléticas, tanto en deportes individuales como de equipo. A su vez, hay que informarles por medio de una carta cuál será el G.O.A.T. (mejor de todos los tiempos) en un deporte distinto al tenis femenino. 
+\newline\newline En el primer modelo se busca a la mejor tenista femenina de \textit{singles} del 2018. Para esto se asignan \textbf{puntos por victoria} que se obtienen al ganar en diferentes rondas de los torneos y \textbf{puntos por bonificación}, que se consiguen considerando victorias contra jugadoras mejor rankeadas y el Grand Slam jugado.  La tenista con mayor cantidad total de puntos será nombrada como la mejor del año 2018.\newline\newline
+En el segundo modelo se determina el mejor corredor de los 100 metros planos. Se analizan los ocho corredores finalistas de los juegos olímpicos de la historia moderna y sus mejores participaciones como base de un puntaje. También acá hay \textbf{bonificaciones}, entre ellas, \textbf{récords en función de los años que perduraron} o \textbf{handicap tecnológico}. El corredor de 100 metros planos con mayor cantidad de mayor cantidad total de puntaje, que se llamará \textbf{Puntos de Grandeza}, será entonces \textbf{el Mejor de Todos los Tiempos}.\newline\newline 
+En el tercer problema se pide una discusión de aspectos a agregar al modelo 2 para encontrar al Mejor de Todos los Tiempos en deportes grupales. Se decidió filtrar los torneos como \textbf{referentes} y a los equipos como \textbf{clubes} y \textbf{selecciones}. Se asignan puntajes no solo por victorias, sino también por la \textbf{importancia del jugador como atacante o estratega}. Además, se obtienen \textbf{puntajes por fair play}, por \textbf{autonomía y cooperación}, y \textbf{bonos por handicap tecnológico}, por \textbf{récords} y por \textbf{especialidad}. Todo ello para determinar los Puntos de Grandeza y con esto el \textbf{G.O.A.T.: el mejor de todos los tiempos}. 
+\newpage
+
+\tableofcontents
+\newpage
+\section{La mejor tenista de \textit{singles} del 2018}
+La mejor tenista de 2018 se definirá de acuerdo a un sistema de Puntos de Grandeza ($PG$), basado en tres aspectos: \textit{los Puntos por Victoria} ($v$), \textit{Bonificación} ($b$) y \textit{Amplificación de Bonificación por Torneo} ($A$).\newline  \newline \textbf{Puntos por Victoria:} Cada tenista, a partir de la Cuarta Ronda, parte con 1 punto de victoria \textit{(v)}. Si gana, obtiene 2 puntos, si vuelve a ganar obtiene 4 puntos, luego 8 y así sucesivamente. Por ejemplo, en un torneo de cuatro jugadoras, la ganadora recibirá 4 puntos, la finalista 2 y las perdedoras 1. 
+ \newline \newline Esto se hace por dos razones. Primero, se considera que ganar en una ronda más avanzada demuestra un mayor nivel comparativamente a tener una victoria en una ronda anterior. Segundo, se considera que ganar una cantidad de partidos seguidos en un torneo es más importante que ganar la misma cantidad de partidos en varios torneos. \newline \newline Al duplicar el puntaje recibido por cada victoria se logra cumplir ambas consideraciones. La primera es evidente y la segunda se debe a que, en una progresión geométrica de razón 2, en donde $S_{k}$ es la suma de los primeros $k$ términos de la progresión (ver demostración en apéndice):
+\begin{equation*}
+    S_{n}+ S_{m} < S_{n+m}
+\end{equation*}
+
+\textbf{Bonificaciones:} Existen tres grupos de jugadoras: las seeds ($s$), que son las 32 mejores rankeadas del torneo, seguidas por las unseeded ($u$), que entraron de forma directa al cuadro principal pero no estaban dentro de las 32 mejores y finalmente las que clasificaron al torneo por medio de una clasificatoria o invitación wild card, que se denominarán qually ($q$). \newline
+En cuanto a ranking:  	
+\begin{equation*}
+    s > u > q
+\end{equation*}
+Debido a las diferencias del nivel de juego, las jugadoras que derroten a rivales de grupos superiores recibirán una bonificación por cada partido de la siguiente forma: se asignará 1 punto de bonificación si una jugadora $q$ le gana a una jugadora $u$ o si una jugadora $u$ le gana a una jugadora $s$ y se asignarán 2 puntos si una jugadora $q$ le gana a una jugadora $s$. \newline\newline También se hará una diferenciación dentro del grupo de las seeds, ya que se conocen sus rankings específicos. Mientras más alto el ranking de una tenista, mayor será la cantidad de puntos y también de nivel que la separan de las siguientes, por lo que derrotar a una contrincante con un ranking más alto será premiable. \newline\newline En el ranking de la asosiación de tenis femenino (WTA) hay diferencia de puntajes en los puestos más altos, que se vuelve menor a medida que el ranking se aleja del puesto número 1. Como el gráfico inicialmente desciende rápido y después cada vez más lento, se puede modelar con una regresión logarítmica $\text{Puntaje}(\text{ranking})$:
+\begin{equation*}
+    \text{Puntaje}(\text{ranking})= 7532 - 1700 · \ln(\text{ranking}) . 
+\end{equation*}
+Ambos se pueden ver en el gráfico 1:\newline
+\begin{figure}[H]
+    \begin{center}
+    \includegraphics[scale=0.5]{graf1.png}    
+    \end{center}    
+    \caption{Distribución de puntajes y línea de tendencia logarítmica de los primeros treinta y dos puestos del ranking del WTA en 2018.}
+\end{figure}
+Con la función Puntaje(ranking), se puede obtener un puntaje aproximado para un ranking x. Con estos puntajes se puede definir la \textbf{distancia} (\textit{d}) de puntajes entre dos rankings (uno \textit{mayor} y otro \textit{menor}) como:
+\begin{equation*}
+    d = \text{Puntaje}(\text{mayor})-\text{Puntaje}(\text{menor})
+\end{equation*}
+La mayor diferencia de puntos se da entre el ranking 1 y el 32, que corresponde a aproximadamente a 5891 puntos, mientras que la diferencia mínima se encuentra entre los rankings 31 y 32, y corresponde aproximadamente a 53 puntos. A la menor diferencia de puntaje no se le asignará ninguna bonificación, pues las competidoras tienen un nivel similar y a la mayor diferencia se le asignará una bonificación ($b$) de 1 punto. Las demás diferencias se interpolan usando la siguiente función lineal:
+
+\begin{align*}
+    b(d)&= \dfrac{1}{\text{Puntaje}(1)-\text{Puntaje}(32)}\cdot d\\
+\end{align*}
+Es importante considerar que con la diferencia se puede discriminar entre desigualdades de rankings, pues hay inequidades de puntajes entre la ranking 1 y 2 en contraste a la rankeada 31 y la 32. De esta manera se puede asignar la bonificación de una manera más adecuada. \newline \newline \textbf{Amplificación de la Bonificación (\textit{A}):}
+Considerando que el ranking en un torneo a inicios de año tiene menor valor que el ranking en un torneo a finales de año, se amplificará la bonificación en cada Grand Slam. Dado que el sistema de bonificación depende del ranking de las jugadoras al momento de su participación en el torneo, se le dará más valor a la bonificación a medida que avanza el año. La bonificación se amplificará de acuerdo a los valores expuestos en la siguiente tabla: \newline 
+\begin{figure}[H]
+    \begin{center}
+    \includegraphics[scale=0.55]{tabla xd.png}    
+    \end{center}    
+    \caption{Amplificación de la bonificación por torneo}
+\end{figure}
+
+\textbf{Fórmula Final}: Finalmente se suman los puntos por victoria a partir de la Cuarta Ronda y las bonificaciones amplificadas de cada jugadora para obtener sus Puntos de Grandeza (\textit{PG}). Todo esto, de acuerdo a la fórmula:
+ \newline 
+ \begin{equation*}
+     PG = \sum(v) + \sum(bA)
+ \end{equation*}
+ \textbf{Resumen del algoritmo}: Se muestra el siguiente diagrama de flujo, con el fin de resumir todo el proceso:
+ 
+ \begin{figure}[H]
+    \begin{center}
+    \includegraphics[scale=0.55]{Asignacion de PG para tenistas.png}    
+    \end{center}    
+    \caption{Diagrama de flujo 1}
+\end{figure}
+ 
+\textbf{Resultados}: Para cerrar, aquella tenista con el mayor valor de Puntos de Grandeza será la mejor del 2018. \newline
+Si se aplica este algoritmo a los datos provistos sobre los resultados de los Grand Slam de 2018, se obtiene el top 10 expuesto en la siguiente tabla, y Simona Halep resulta como la mejor tenista del 2018.\newline
+
+\begin{figure}[H]
+    \begin{center}
+    \includegraphics[scale=0.60]{figura 3.png}    
+    \end{center}    
+    \caption{Top 10 mejores tenistas del 2018 de acuerdo al Modelo 1. [Hoja de cálculo M1]}
+\end{figure}
+\subsection{Análisis de los resultados}
+En primer lugar, se puede ver que Halep es mejor que Kerber por muy poco. En este caso, porque Kerber ganó la final de Wimbledon, llegó a cuartos de final en el Roland Garros y en el Australian Open perdió en semifinal, mientras que Halep fue campeona del Roland Garros y subcampeona en el Australian Open. Entonces se aprecia que el modelo prioriza haber ganado la final del Roland Garros y llegado a la final del Australian Open, antes que haber perdido en cuartos en el Roland Garros, perdido en semis en el Australian Open y ganado la final de Wimbledon. Esto ya que, aunque Kerber haya tenido una mayor cantidad de victorias que Halep, estas fueron en partidos de menor importancia. En cualquier caso, la diferencia entre las dos tenistas fue poca, pero el modelo terminó favoreciendo a Halep.  \newline\newline
+También se puede ver que Serena Williams quedó tercera de acuerdo al sistema. Esto es adecuado para ella al compararlo con sus resultados en el ranking WTA de 2018. Según la WTA ella terminó decimosexta del mundo, pero esto principalmente se debió a que no pudo jugar hasta ese año por su embarazo. Es decir que no pudo participar en muchos torneos, lo que perjudicó su ranking. Sin embargo, dado que el modelo se basa en el desempeño en el torneo de las mejores, su rendimiento demostró que ella es una jugadora top 3, algo que el ranking WTA no muestra. \newline\newline
+Asimismo, se vió que se generaba un triple empate entre Williams, Osaka y Wozniacki con 17 puntos y gracias al sistema de bonificación se pudo superar; dejando a Williams en tercer lugar, Osaka en cuarto y Wozniacki en quinto. Este orden tiene sentido, pues Williams logró dos victorias contra rivales mejor rankeadas, llegando a ser finalista dos veces derrotando a rivales con mejores rankings que ella en los dos torneos finales de la temporada, es decir los que tienen la mayor amplificación de bonificación. Por otro lado Osaka y Wozniacki cada una fue campeona de un Grand Slam y derrotaron a rivales con mayores rangos que ellas. No obstante, la diferencia entre las victorias de Osaka y Wozniacki, fue que Osaka obtuvo el trofeo al derrotar a alguien con una mayor diferencia de ranking en el US Open, el torneo con mayor amplificación de la bonificación de la temporada, mientras que Wozniacki ganó el Australian Open, el torneo con la menor amplificación de bonificación, derrotando a alguien con menor diferencia de ranking que en el caso de Osaka. Así se ve que el modelo considera estos aspectos especiales de su rendimiento. De manera similar se pueden considerar los casos de Keys y Stephens y de Sevastova y Suárez Navarro.\newline\newline
+Lo mejorable de este modelo es que es necesario modificarlo para poder aplicarlo a otros deportes. Es dependiente de los Grand Slam, amén de que depende mucho de la organización del tenis. Por otro lado, no considera casos de empates (algo posible en otros deportes). Asimismo solamente se da para un único año, lo que no basta para determinar a la mejor jugadora de todos los tiempos del tenis femenino. \newline\newline
+Otro aspecto que se podría mejorar de este modelo, es la elección de los puntajes máximos, por ejemplo, la amplificación de la bonificación se determinó entre 1 y 2, como también se estableció que el puntaje máximo de bonificación por diferencia de ranking fuese uno o bien que linealmente se asignara puntaje en el caso de que se diese una victoria contra alguien de un mejor grupo. \newline\newline
+De todas maneras, los rankings en sí son arbitrarios, pues la selección de lo que se cuenta y lo que no, y la importancia de un aspecto en relación a otro, como la relación entre una victoria en un torneo y la victoria contra alguien mejor rankeado, es subjetivo y difícil de cuantizar. Por ende, encontrar una selección racional para jerarquizar a deportistas siempre será algo arbitrario y complejo. \newline
+
+
+\section{G.O.A.T. de cualquier deporte individual}
+Durante el desarrollo del modelo anterior, se pudo notar que los deportes individuales se pueden separar en dos grupos: con y sin adversario. El caso del tenis femenino representa un deporte con adversario, pues se está compitiendo cara a cara con otra persona y el éxito o fracaso no recae únicamente en un individuo, sino en la interacción de ambos adversarios. \newline\newline
+El punto es que pueden existir diferencias fundamentales entre estas dos subdivisiones, como por ejemplo, la bonificación por derrotar a rivales mejor rankeados en deportes individuales sin adversario, como los cien metros planos, puede ser imposible de asignar, ya que nunca se derrota a un rival, sino que uno se supera a sí mismo. \newline\newline Por lo demás, ahora se eligirá un deporte sin adversario, los 100 metros planos masculinos, para entender las diferencias de estos tipos de deportes individuales y cómo se adapta el modelo en relación al deporte anterior. Esto también permitirá tener ideas para generar un modelo “general” para ambos tipos de deportes individuales, que será discutido al final de este capítulo. 
+
+\subsection{El mejor corredor de 100 metros planos de todos los tiempos}
+Para determinar al mejor corredor de 100 m planos de todos los tiempos, se usará una variación del sistema de Puntos de Grandeza (PG). Este sistema considerará el rendimiento de los corredores en la final de todos los juegos olímpicos a partir de la ronda final según un puntaje, junto al tiempo en que sus récords fueron imbatibles (Marca de campeón o MC) y a la cantidad de veces que estuvieron en rachas de medallas de oro (Bono consistencia oro o BCO) o en el podio (Bono consistencia podio o BCP). 
+ \newline\newline No obstante, se tendrá en cuenta con el fin de nivelar, un handicap tecnológico, ya que se ha demostrado que el avance de la ciencia ha influido en el rendimiento de los deportistas actuales, por lo que se asignará un bono por este handicap a los corredores más antiguos (Bono por handicap o T). Entonces, el corredor que tenga la mayor cantidad de Puntos de Grandeza, será el mejor de todos los tiempos. \subsubsection{Victorias en el torneo referente} 
+\textbf{Índice de torneo referente}:
+Por experiencia propia se ha visto que existen torneos que tienen una gran fama, en los que tienden a participar los mejores deportistas. Por esta razón se piensa que el mejor corredor probablemente habrá rendido bien en estos torneos. Para determinar cuál es dicha competencia, se define un índice para determinar el torneo que contiene a los mejores corredores de la época. Se considera que los torneos referentes tienden a tener un premio monetario alto (en decenas de miles de dólares), por lo que atrae a muchos jugadores de muchos países. Además, se piensa que el torneo referente por lo general es uno que ha perdurado históricamente, es decir, el tiempo de vida le da prestigio (en años). Considerando estos factores, se define el índice de torneo referente ($I_{\text{torneo}}$): 
+\begin{equation*}
+    I_{\text{torneo}} = \text{premio campeón} + \left[\frac{\text{existencia}}{\text{frecuencia}}\right] + \text{países}
+\end{equation*}
+Si se hace una tabla de los torneos de atletismo más famosos con sus respectivos índices, se obtiene lo siguiente:
+\begin{figure}[H]
+    \begin{center}
+    \includegraphics[scale=0.8]{figura 77.png}    
+    \end{center}    
+    \caption{Índice de torneo referente para cada torneo principal del atletismo}
+\end{figure}
+
+\newline Por lo tanto, según este índice, los juegos olímpicos son el torneo referente que cuenta con la participación de corredores de élite de todo el mundo. Esto por tener la mejor relación entre premio monetario, cantidad de participantes y cantidad de ejemplares a lo largo de su tiempo de existencia. \newline \newline \textbf{Ronda de corte}: Se define que los mejores corredores de 100 metros planos debieron haber llegado a la final de algún juego olímpico, por ende, solo se considerarán los resultados de esta ronda, o sea de los primero ocho corredores de cada versión del certamen. Esto también permite reducir la cantidad de corredores y poder recurrir datos históricos existentes. \newline\newline \textbf{Victorias en los juegos olímpicos}:
+Como la ronda de corte es la final, solo se contarán los corredores que llegaron a esta ronda. Cada final contempla generalmente 8 atletas. Sabiendo el rendimiento de cada uno de ellos en cada versión en la que hayan participado se puede obtener un puntaje que cuente la cantidad de veces que han triunfado y en qué posición lo han hecho. Este se asignará con la función $P(n)$, donde el valor de $n$ corresponderá al puesto del 1 al 8 que consiga el corredor en la respectiva versión:
+\begin{equation*}
+    P(n) = 2^{7-n}
+\end{equation*}
+
+Asimismo, se sumarán los puntos según la cantidad de veces que el jugador haya logrado llegar a la final (ver aplicación en tabla 3, datos obtenidos de [OL]). 
+\subsubsection{Bonificación por récords}
+Junto a los puntos por victorias, se asignan bonos de acuerdo a los récords que los atletas han logrado. Aquí se diferencian tres récords. \newline\newline \textbf{Marca de campeón}: En primer lugar, los récords de velocidad que establecen los mejores atletas en su época y el tiempo que estos récords se mantienen, es decir el tiempo que el atleta se mantiene como quien ha corrido más rápido los 100 metros planos. Para esto, dependiendo de cuántos años perdure el récord sin ser roto (t), se le asignará una puntuación (Marca de campeón o $MC$) utilizando la siguiente función: 
+\begin{equation*}
+    MC(t) =16t
+\end{equation*}
+Se selecciona la constante 16, porque cuatro años de récord imbatido son considerados equivalentes a haber obtenido oro en los juegos olímpicos que se realizan cada cuatro años (ver aplicación en tabla 3).  \newline\newline \textbf{Bono consistencia oro}: También se asigna una bonificación a los corredores que hayan sido consistentes en su alto desempeño en los juegos olímpicos. Es decir, si es que obtienen oro más de una vez seguida se le asigna el Bono consistencia oro ($BCO$) que es dependiente de la cantidad de juegos olímpicos seguidos en las que se consiguió oro (o) de acuerdo a la función:  
+\begin{equation*}
+    BCO = 32o - 32
+\end{equation*}
+Nótese que esto implica que haber conseguido por dos años seguidos dos medallas de oro, es similar a haber conseguido una medalla de oro más (ver aplicación en tabla 3). \newline\newline \textbf{Bono consistencia podio ($BCP$)}: En una similar medida, se asigna una bonificación a quienes hayan llegado al podio más de una vez, sin incluir a quienes hayan repetido oro, pues estos ya tienen su bonificación. Este puntaje será llamado Bono consistencia podio, que dependerá de los años seguidos en que se llegó al podio (p). 
+\begin{equation*}
+    BCP = 16p-16
+\end{equation*}
+Nótese que se asume que haber logrado el podio en dos años seguidos es equivalente a haber ganado una medalla más de bronce (ver aplicación en tabla 3).  \subsubsection{Bonificación por handicap}Según David Epstein [DE], si Owens hubiese corrido junto a Bolt en 2013 en igualdad de condiciones, Owens habría quedado en segundo lugar de aquella carrera y habría estado a solo un paso de la meta en el momento en que Bolt la cruza. Por lo tanto se genera una ventaja debido a la tecnología. Se puede conjeturar que esta ventaja se da a partir de 1968 (año hasta el que se tienen condiciones similares frente a la introducción de materiales tecnológicos sintéticos tanto en la pista como en los implementos de medición y competición).  Japón 1964 fueron los últimos juegos olímpicos con una pista hecha de cenizas [SS], luego del que se implementó la pista sintética. Para demostrar esta conjetura, se hace un gráfico que muestra en el eje X a los años en los que se batieron récords y en el eje Y los tiempos de estos récords. Se hace una regresión cúbica\footnote{Decimales acortados para la claridad del lector. Se trabajará con todos los decimales para mantener la precisión. Decimales originales en apéndice.} ($R(t)$) para así poder determinar la tendencia de estos puntos, que tiene una precisión del 98\% ($r^{2}\approx 0,98$):
+\begin{equation*}
+    R(t) = -2.12\cdot 10^{-6}t^{3} + 0.01t^{2} - 24.65t + 16184.65
+\end{equation*} 
+\begin{figure}[H]
+    \begin{center}
+    \includegraphics[scale=0.6]{figura 7.png}    
+    \end{center}    
+    \caption{Gráfico de R(t).}
+\end{figure}
+Se puede visualmente observar que alrededor de $t=1968$ hay un punto de inflexión. Esto lo se puede confirmar igualando la segunda derivada a cero:
+\begin{align*}
+   \frac{d^{2}R(t)}{dt^{2}} = 0, \\
+\end{align*}
+lo que se cumple cuando: 
+\begin{align*}
+    t \approx 1967,729. 
+\end{align*}
+Considerando a la concavidad anterior a este valor de $t$, se puede ver que $t$ es un punto de inflexión. Esto significa que antes de 1968 la tendencia de los récords era a mantenerse constante, mientras que la tendencia luego de este año es a bajar, todo gracias a la introducción de la pista sintética.\newline\newline  Debido a esto da un bonus a aquellos corredores que corrieron antes de 1968, para que queden nivelados con los que recibieron ventaja. Para hacer esto, se determina que el máximo puntaje a asignar será de 64 puntos, para aquellos corredores de 1912 o antes, mientras que se darán 0 puntos a los corredores posteriores a 1968. Para determinar una escala, se hará otra regresión cúbica ($R_{i}(t)$) con los mismos datos de antes\footnote{Decimales acortados para la claridad del lector. Se trabajará con todos los decimales para mantener la precisión. Decimalese originales en el apéndice.}, pero se acotarán los años hasta 1912. Así se obtiene la función: \begin{equation*}
+    R_{i}(t)=-5.23\cdot 10^{-6}t^{3}+0.03t^{2}-59.53t+38651.79
+\end{equation*}
+\begin{figure}[H]
+    \begin{center}
+    \includegraphics[scale=0.60]{figura 8.png}    
+    \end{center}    
+    \caption{Gráfico de $R_{i}(t)$.}
+\end{figure}
+Luego, se acota a $R_{i}(t)$ entre los valores 1 y 0 usando normalización min max. Esto da la función $T(a)$:
+\begin{equation*}
+    T(a)= K \left[\frac{R_{i}(a)-R_{i}(1968)}{R_{i}(1912)-R_{i}(1968)}\right]
+\end{equation*}
+Finalmente, se amplifica por el máximo K determinado: K=64, para que se tengan los rangos determinados. Asi, la bonificación se asignará de acuerdo a la función: 
+
+\[
+  T(a) = \left\{
+     \begin{array}{@{}l@{\thinspace}l}
+       1912 &: a<1912\\
+       T(a)=64\left[\frac{R_{i}(a)-R_{i}(1968)}{R_{i}(1912)-R_{i}(1968)}\right]  &: 1912\leq a\leq 1968\\
+       0&: a>1968 \\
+     \end{array}
+   \right.
+\]
+\subsection{Función final, diagrama para resumir y resultados}
+Considerando todo lo anterior, se puede decir que los Puntos de Grandeza ($PG$) se pueden obtener mediante la siguiente suma: 
+\begin{equation*}
+    PG = \sum (P) + MC + BCO \text{ o } BCP + T
+\end{equation*}
+Ahora, para resumir el proceso entero, se expone el siguiente siagrama de flujo:\newline 
+\begin{figure}[H]
+    \begin{center}
+    \includegraphics[scale=0.6]{Diagrama Flujo mod2.png}    
+    \end{center}    
+    \caption{Diagrama de flujo del modelo 2.}
+\end{figure}
+\textbf{Resultados 100 metros planos.}
+Según estas condiciones, la tabla de los ocho mejores corredores de 100 metros planos de todos los tiempos se deja clarificar de la siguiente manera:\newline
+\begin{figure}[H]
+    \begin{center}
+    \includegraphics[scale=0.6]{figura 6.png}    
+    \end{center}    
+    \caption{Mejores 8 corredores de 100 metros planos de todos los tiempos. [Hoja de cálculo M2]}
+\end{figure}
+En la tabla anterior se puede ver que Usain Bolt figura como el mejor de todos los tiempos en la competencia de los 100 metros planos por el récord que hasta hoy lleva 13 años vigente, además de sus 3 medallas de oro seguidas en los juegos olímpicos. Jesse Owens, por otra parte, quedó a menos de una medalla de oro (64 puntos) de Bolt, debido sustancialmente a que de 1936 a 1948 no hubo juegos olímpicos. En esos años Owens pudo perfectamente haber ganado otra medalla de oro porque este período contempló sus 23 a 35 años de edad. Por lo menos pudo haber corrido hasta Londres 1944 con 31 años. \newline\newline A pesar de ello Owens fue el mejor del mundo indiscutidamente por 20 largos años. Este sistema de puntuación también podría ser injusto para Owens en la medida que hizo cuatro récords en 45 minutos no considerados en otras disciplinas y en otra competición ajena a los juegos olímpicos. En este caso, Jesse Owens no fue premiado por ser el atleta más completo, sino por su carrera en lo que a la disciplina de 100 metros planos respecta. \newline\newline También se puede ver que Jim Hines quedó tercero de acuerdo al sistema. Esto es adecuado para un medallista de oro poseedor de un récord de 15 años, que se considera es equivalente a casi 4 medallas de oro por ser el mejor del mundo por todo ese período.  \newline\newline De igual manera, el medallista de oro y record holder entre los años 1921 y 1930, Charles Paddock, se ubica en el cuarto lugar seguido del más reciente doble medallista de oro con récord que duró 3 años, Carl Lewis del 1988.
+\subsection{Aspectos a perfeccionar para aplicar a otros deportes individuales
+}
+Primero,  en este modelo se eligió a los juegos olímpicos como torneo más importante para los 100 metros planos masculinos. Esta elección sistematizada podría expandirse a otro tipo de certamen, es decir, se podría considerar más de un torneo para determinar al G.O.A.T. Por ejemplo, cuando dos torneos tienen un índice muy similar. 
+\newline\newline El modelo debiera tener en cuenta el efecto de eventos históricos. Tales como el hecho de que algunos juegos olímpicos debieron ser cancelados por la primera y luego también la segunda guerra mundial, o también el Boicot de EEUU a la URSS en 1980, que generó la ausencia de este país y varios más en los juegos olímpicos. Inclusive se debe considerar a los juegos de 2020, que debido al coronavirus no se realizaron.
+\newline\newline Se puede observar que el modelo también usa al índice de ronda de corte, para determinar la ronda  que contenga solo a la élite dentro de los deportistas excelentes. El tema, es que el uso de rondas de corte se debería adaptar de alguna manera a torneos que sean del estilo round robin, en donde todos se enfrenten a todos.  \newline\newline También se debe encontrar un método para determinar la importancia de un récord. En el caso de los cien metros planos fue bastante intuitivo determinar los récords importantes, pero para otros deportes individuales esto no es necesariamente evidente. Por lo demás, esto también se debería poder establecer de una manera sistemática. 
+\newline\newline Otro aspecto importante es que se debe saber qué tan fuerte es el impacto de la tecnología para el deporte en específico. Quizás para el atletismo las mejoras de la tecnología no fueron tan importantes como lo fueron para la arquería. Entonces, como es de esperar, hay que saber también en qué medida la tecnología fue influencial. \newline \newline Por último se puede afirmar que este modelo debería también tener un proceder para el caso de los empates. Una posible solución a esto, podría ser que se comparen los rendimientos si es que estos rivales se enfrentaran entre sí (en la medida que fuese posible). 
+\section{G.O.A.T. en deportes en equipo}
+\subsection{Filtrado de torneos y equipos}:
+Antes de pensar en un modelo para determinar al mejor deportista de todos los tiempos, se debe filtrar los datos que se tiene, para así solo considerar a los mejores equipos que hayan participado en los mejores torneos. \newline\newline 
+\textbf{Filtrado de torneos}:
+En relación a lo hecho hasta ahora en los deportes individuales, para determinar al G.O.A.T. de un deporte de equipo, se seleccionará/n el/los torneos más representativos y referenciales del deporte grupal en cuestión mediante el índice de torneo referente. Ya sean los Juegos Olímpicos en el caso del vóleibol o el Mundial el caso del rugby. En base a esto se hacen dos acotaciones:  
+\begin{itemize}
+    \item Existen torneos en donde participan solo selecciones.
+    \item Existen torneos solo de clubes. 
+\end{itemize}
+Debido a que un club no depende únicamente de un producto nacional, se supondrá que ganar un trofeo/liga/copa referente con una selección federativa o nacional es más meritorio que ganar un torneo con un club que puede contar con los servicios de los mejores talentos globales sin restricciones deportivas, sino económicas.\newline\newline En el ejemplo del fútbol, la UEFA Champions League claramente maneja más dinero en premios al campeón  (alrededor de los 80 millones de dólares [G]) que la Copa Mundial de la FIFA  (alrededor de los 40 millones de dólares [LI]). \newline\newline Es por esta razón que en los deportes grupales se considerarán ambas competiciones que tengan mayor índice de torneo referencial a nivel clubes y selecciones en el deporte en cuestión, en caso de ser pertinente. \newline\newline \textbf{Filtrado de equipos:} Con el fin de filtrar a los equipos que no poseen necesariamente el nivel de los mejores y lograron entrar al torneo referencial, se definirá una ronda de corte, de tal forma que contenga a los mejores de los mejores dentro de los equipos, ya sean selecciones o clubes. Mientras más avanzada sea la ronda en el torneo, mejor debería ser la calidad de los equipos que tiene, y por ende, de los jugadores.
+\subsection{El mejor del mundo en un deporte: sistema de puntos}
+Siguiendo con lo que se ha hecho en los modelos anteriores, se hará un sistema de puntos sobre aquellos datos que se estiman relevantes obtenidos de la etapa de filtrado; en este caso, sobre el historial general de los torneos seleccionados a partir de una ronda determinada. Este debe considerar a seis factores: índice de victorias, coeficiente de atacante - estratega, coeficiente de fair play, estadística de autonomía, bono handicap tecnológico y bono por especialidad. Cada uno de estos, dará una cantidad fija de puntos, y la suma de estos puntos serán sus Puntos de Grandeza.  \newline\newline \textbf{Puntaje por victorias}: En los deportes de grupo se debe considerar a las victorias en las que el jugador haya participado, es decir, se debe ignorar las victorias de su equipo cuando el jugador está en la banca. Lo mismo para los títulos; solo se deben considerar los casos en los que el jugador haya participado. \newline\newline \textbf{Puntaje de atacante estratega}: Es un patrón bastante claro que en los deportes de equipo hay diversas posiciones, por lo que la del jugador debe ser considerada. Se supone que los jugadores indispensables son aquellos que tienen un rol ofensivo, pues un equipo puede aspirar a una victoria únicamente si es que convierte (puntos, goles, tries, entre otros). De lo contrario,  el empate o la derrota por menos cantidad de puntos en contra son las únicas alternativas a aspirar para defensores. \newline\newline Junto a esto se define según datos históricos, que el mejor jugador será un buen atacante y también un buen estratega (Pelé, Maradona y Messi corresponden al rol del número 10 en el fútbol). Considerando que los jugadores ofensivos hacen más puntos, y que los estrategas hacen más asistencias, entonces se establecerá un índice de ofensividad considerando los puntos por torneo, junto a un índice de estrategia, que considera las asistencias.\newline\newline \textbf{Índice de atacante}: Se considerará la cantidad de anotaciones promedio dentro del torneo. Además, este índice debería verse afectado por los desaciertos/ fallos. \newline\newline \textbf{Índice de estratega}: Se contará la cantidad de asistencias promedio dentro del torneo. \newline\newline La suma entre ambos índices debería dar entonces el coeficiente de atacante estratega. \newline\newline \textbf{Puntaje de fair play}: 
+También es importante remarcar que las expulsiones son puntos negativos; mientras menos tiempo en cancha, menor es la utilidad del jugador, por lo que una mayor cantidad de expulsiones o medidas disciplinarias en su historial influenciará negativamente en el puntaje del jugador. Por ende, a mayor cantidad de expulsiones un jugador tenga, más grande será este índice, que se multiplicará por -1, para que se reste puntaje. \newline\newline \textbf{Puntaje de autonomía y cooperación}: Un jugador autónomo es aquel que puede hacer un punto/gol/try/canasta (etc.) con la menor influencia de sus compañeros posible, es decir, sin pases o asistencias. En el fondo, un jugador cooperador puede coordinarse con sus compañeros y ser exitoso en su cometido, ya sea convirtiendo o asistiendo. \newline\newline \textbf{Estadística de autonomía}: cuantiza la cantidad de anotaciones sin asistencias del equipo. \newline\newline \textbf{
+Estadística grupal}: cuantiza la cantidad de anotaciones con asistencia del equipo.\newline\newline Entonces, el índice de autonomía y cooperación será la suma de estadística de autonomía y la grupal. 
+\subsection{El mejor del mundo en un deporte: Bonos}
+Además, se asignan bonos, es decir, puntaje que considera datos que se salen de los filtros.  \newline\newline \textbf{Bono handicap tecnológico}: Se mantendrá el bono por influencia de la tecnología, para así permitir una comparación justa entre deportistas de épocas diferentes. Para esto se debe medir cómo ha mejorado el rendimiento general de los equipos/deportistas con la introducción de alguna tecnología o innovación significativa, como el cambio del tipo de superficie, calzado o incluso raquetas (caso de dobles de tenis). \newline\newline \textbf{Bono por records}: Es de esperarse que el mejor de cualquier disciplina haya dejado su marca positiva en la historia. Por consiguiente, a los highscores o récords se les asignará un valor comprendido por el bono por récords dependiendo de su perduración. \newline\newline \textbf{Bono por reconocimiento}: El bono por reconocimiento tendría que ver con los logros a nivel personal del competidor en cuestión; en el caso del fútbol se puede resaltar el balón de oro, los premios The Best o la bota de oro. No sería extraño que en otros deportes en equipo existiera esta distinción. \newline\newline \textbf{Bono por especialidad}: Como último aspecto pero no por ello menos importante, existen personas que tienen jugadas o trucos que son icónicos y propios. Por ejemplo la elástica de Ronaldinho, el rainbow flick de Neymar, el Panenka, el Fly Jordan, o el Slam Dunk de Sampras. Al fin y al cabo, estos símbolos son los que transforman al deporte en un espectáculo, por lo que su rol es vital para el deporte. Por esta razón, se asignará un puntaje fijo si es que el dicho deportista tiene o no un movimiento propio. 
+\subsection{Para cerrar}
+Los Puntos de Grandeza se subdividen en dos categorías; puntaje asignado y bonos. 
+\begin{itemize}
+    \item El puntaje asignado tiene meramente que ver con estadísticas del deportista por partido. 
+    \item Los bonos, por otro lado, son más generales y se ven con respecto a la totalidad de la carrera del deportista.
+    \item Si se suman los bonos a los puntajes se obtienen los Puntos de Grandeza.
+    \item Posteriormente se determina al deportista con el mayor valor de Puntos de Grandeza, que será el Greatest of all Times del deporte grupal específico.
+\end{itemize}
+   Finalmente, se incluye el siguiente gráfico de flujo, con el fin de resumir este tercer modelo. 
+\begin{figure}[H]
+    \begin{center}
+    \includegraphics[scale=0.55]{Diagrama de flujo mod3.png}    
+    \end{center}    
+    \caption{Diagrama de flujo del modelo 3.}
+\end{figure}
+
+
+\newpage 
+
+\section{Carta al Director}
+Estimado Director de Top Sport,\newline \newline se agradece mucho su interés por los resultados de esta investigación. Como primer acercamiento al resultado, el equipo se dedicó a resolver la pregunta: ¿quién es mejor, Jesse Owens, Carl Lewis o Usain Bolt? \newline\newline Primero que nada, se determinó que el mejor corredor de la historia, debió haber tenido uno de los mejores desempeños en el torneo más representativo del atletismo: los juegos olímpicos. 
+\newline\newline Para lograr determinar al G.O.A.T. de los 100 metros planos, salió a la luz que el mejor corredor no es únicamente el que logra el menor tiempo, sino que es el mejor en diversas áreas, tales como la cantidad de tiempo por el cual su récord no pudo ser batido, su desempeño en el torneo más importante de los 100 metros planos, los juegos olímpicos, y la cantidad de veces seguidas que estuvo en el podio. Sin embargo, se evidenció que la comparación de la calidad entre corredores de épocas diferentes es injusta, debido al desarrollo de la tecnología. Por lo tanto, se confeccionó un método para equiparar condiciones. \newline\newline Tras la investigación y delimitación de los respectivos parámetros, se concluyó  lo siguiente: 
+\begin{figure}[H]
+    \begin{center}
+    \includegraphics[scale=0.385]{tablaCarta.png}    
+    \end{center}    
+\end{figure} 
+Resultado que muestra sorprendentemente que muchos corredores del pasado son mejores que algunos de la actualidad, aunque Usain Bolt mantiene su superioridad. \newline\newline Respetuosamente, \newline   \hfill un grupo del IM$^2$C.
+
+
+\newpage
+
+
+
+\section{Referencias}
+[Hoja de cálculo M1] \url{https://docs.google.com/spreadsheets/d/1TE3Zg-y6fz9T2GDxY_D1ahQcIiTh2czezUY_zKGlPSA/edit?usp=sharing}: Hoja de cálculo del primero modelo, incluye resultados.\newline\newline [Hoja de cálculo M2]
+\url{https://docs.google.com/spreadsheets/d/1fcF1L75A7yUgxSVSSCnKjniE247S4Mz0H50P_5dxm4E/edit?usp=sharing}: Hoja de cálculo del segundo modelo, incluye resultados.\newline\newline [WTA]: \url{https://es.wikipedia.org/wiki/Anexo:Ranking_WTA_de_tenistas_individual_femenino_de_2018}: Ranking de la asociación de tenis femenino.\newline\newline [CG] \url{https://cronicaglobal.elespanol.com/deportes/suculentos-premios-mundial-atletismo-londres_80290_102.html}: Premios en dólares del mundial de atletismo.
+\newline\newline [D] \url{https://www.duna.cl/noticias/2016/08/18/cuanto-dinero-ganan-los-medallistas-de-los-juegos-olimpicos/ } : Premios en dólares de los juegos olímpicos.\newline\newline [T] \url{https://tokyo2020.org/es/games/olympic-games-about/#:~:text=El\%20COI\%20reconoce\%20a\%20206,Olímpicos\%20de\%20verano\%20e\%20invierno}: Número de federaciones que participan en los juegos olímpicos.\newline\newline
+[WC] \url{https://www.wangconnection.com/diamond-league-premios-2018/}: Premios en dólares de la Diamond League.\newline\newline [DL] \url{https://en.wikipedia.org/wiki/Diamond_League#Countries_by_number_of_event_winners}: Número de federaciones que participan en la Diamond League.\newline\newline [DE] \url{https://www.youtube.com/watch?v=8COaMKbNrX0}: David Epstein compara el rendimiento de Usain Bolt y Jesse Owens.\newline\newline [SS] \url{ https://journals.sagepub.com/doi/pdf/10.1260/1747-9541.6.3.479}: Determinantes del rendimiento en los 100 metros planos.\newline\newline [G] \url{https://gestion.pe/tendencias/este-es-el-premio-que-recibira-el-campeon-de-la-champions-2020-noticia/#:~:text=Bayern\%20Munich\%20se\%20corona\%20como,a\%20los\%20US\%24\%2077.5\%20millones.&text=Actualizado\%20el\%2023\%2F08\%2F2020,m}: Premio en dólares de la Champions League al campeón.\newline\newline  
+[LI] \url{https://www.lainformacion.com/deporte/mundial-rusia-2018-cuanto-dinero-gana-el-campeon/6352385/}: Premio en dólares del Mundial de fútbol al campeón.\newline\newline  [OL] \url{https://www.olympic.org/}: Datos de juegos olímpicos. \newline\newline [Código] \url{https://colab.research.google.com/drive/1jbCW03fWRpDYlZdMca1HzaWME51umJGK#scrollTo=aFDi_fhLPrt8}: Código utilizado para generar la tabla ubicada en las columnas A:B, en la hoja "Resultados Puntos" de [Hoja de cálculo M2]. Su descripción está en el mismo link. 
+
+\newpage
+\section{Apéndices}
+\subsection{Demostracion 1}
+Por demostrar que:\newline\newline Dada la progresión geométrica ${1,2,4,8,16,...}$, entonces $S_{a} + S_{b} <S_{a+b}$ con $0<a\leq b$. \newline
+Como:
+\begin{align*}
+    &S_{a}+S_{b}=(2^{a}-1)+(2^{b}-1)\\ \end{align*} 
+Y: \newline 
+\begin{align*}
+    &S_{a+b}= 2^{a+b}-1\\
+\end{align*}
+Y como además que:
+\begin{align*}
+    &0<a\leq b<a+b\\
+    &1<2^{a}\leq 2^{b}< 2^{a+b} \\
+\end{align*}
+Entonces:
+\begin{align*}
+    &2^{a}+2^{b}\leq 2^{b}+2^{b}= 2\cdot 2^{b} = 2^{1+b} \leq 2^{a+b}\\
+\end{align*}  
+Por lo que se puede mostrar que 
+\begin{align*}
+     &2^{a} +2^{b}\leq 2^{a+b}\\
+    \Rightarrow\quad &2^{a} +2^{b} -2 < 2 ^{a+b} -1\\
+    \Rightarrow\quad &S_{a} +S_{b}<S_{a+b}\quad\qed\\
+\end{align*}
+\subsection{Constantes de $R(t)$}
+Se mantienen estas constantes, porque son importantes para poder graficar correctamente a $R(t)$. 
+\begin{itemize}
+    \item Término cúbico: $-2.12185041185453\cdot 10^{-6}$.
+    \item Término cuadrático: $0.0125256773868278$.
+    \item Término lineal: $ - 24.6513859692042$.
+    \item Término constante: $16184.6562197907$.
+\end{itemize}
+\subsection{Constantes de $R_{i}(t)$}
+Se mantienen estas constantes, porque son importantes para poder graficar correctamente a $R_{i}(t)$. 
+\begin{itemize}
+    \item Término cúbico: $-5.23470032557297\cdot 10^{-6}$.
+    \item Término cuadrático: $0.030573887515583$.
+    \item Término lineal: $ - 59.5303771683086$.
+    \item Término constante: $38651.7920355467$.
+\end{itemize}
+
+
+
+\subsection{Cuadros \textit{Grand Slam} 2018 damas \textit{singles}.}
+\begin{figure}[H]
+    \begin{center}
+    \includegraphics[scale=0.55]{figura 26.png}    
+    \end{center}    
+\end{figure} 
+\begin{figure}[H]
+    \begin{center}
+    \includegraphics[scale=0.55]{figura 27.png}    
+    \end{center}    
+\end{figure} 
+
+
+\end{document}
+
